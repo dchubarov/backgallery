@@ -1,0 +1,9 @@
+
+storage:
+  data-dir:
+  media-dir:
+  store-originals:
+
+spring:
+  main:
+    banner-mode: off

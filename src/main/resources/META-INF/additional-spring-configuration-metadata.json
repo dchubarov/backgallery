@@ -1,0 +1,20 @@
+{
+  "properties": [
+    {
+      "name": "storage.data-dir",
+      "type": "java.lang.String",
+      "description": "Mandatory. Base directory where Backgallery keeps its data files."
+    },
+    {
+      "name": "storage.media-dir",
+      "type": "java.lang.String",
+      "description": "Optional. Base directory for media files if they should be kept separately (for instance, if image files should be directly accessible by a web server)."
+    },
+    {
+      "name": "storage.store-originals",
+      "type": "java.lang.String",
+      "description": "Optional. Original files store location (either data-dir or media-dir). Defaults to data-dir.",
+      "defaultValue": "data-dir"
+    }
+  ]
+}
