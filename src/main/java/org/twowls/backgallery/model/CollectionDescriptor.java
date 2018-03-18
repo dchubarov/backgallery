@@ -2,6 +2,8 @@ package org.twowls.backgallery.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Map;
+
 /**
  * <p>TODO add documentation...</p>
  *
@@ -13,4 +15,6 @@ public class CollectionDescriptor {
     @JsonProperty
     private String description;
 
+    @JsonProperty
+    Map<String, Integer> sizes;
 }
