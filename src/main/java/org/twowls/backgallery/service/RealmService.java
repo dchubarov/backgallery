@@ -14,7 +14,6 @@ import org.twowls.backgallery.model.RealmOperation;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -39,11 +38,11 @@ public class RealmService {
     public RealmDescriptor findByName(String realmName) {
         return realmCache.computeIfAbsent(Named.normalize(realmName), (name) -> {
             try {
-                RealmDescriptor r = mapper.readValue(configFile(name), RealmDescriptor.class);
-                logger.debug("Loading info for the first time for realm '{}'.", name);
-                return r;
+                logger.debug("Loading info for the first time for realm \"{}\".", name);
+                return mapper.readValue(configFile(name), RealmDescriptor.class);
             } catch (IOException e) {
-                throw new UncheckedIOException(e);
+                logger.warn("Error retrieving info for realm \"" + name + "\".", e);
+                return null;
             }
         });
     }

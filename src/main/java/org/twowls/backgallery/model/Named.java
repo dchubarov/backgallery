@@ -9,11 +9,28 @@ import java.util.Objects;
  *
  * @author Dmitry Chubarov
  */
-public interface Named {
+public class Named<T> {
+    private final String name;
+    private final T payload;
 
-    String name();
+    private Named(String name, T payload) {
+        this.name = normalize(name);
+        this.payload = payload;
+    }
 
-    static String normalize(String name) {
+    public String name() {
+        return this.name;
+    }
+
+    public T payload() {
+        return this.payload;
+    }
+
+    public static String normalize(String name) {
         return Objects.requireNonNull(StringUtils.trimToEmpty(name));
+    }
+
+    public static <T> Named<T> of(String name, T payload) {
+        return new Named<>(name, payload);
     }
 }

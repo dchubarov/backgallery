@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.twowls.backgallery.model.CollectionDescriptor;
+import org.twowls.backgallery.model.Named;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.RealmOperation;
 import org.twowls.backgallery.service.RealmAuthenticator;
@@ -38,31 +39,39 @@ public class CollectionController {
     collectionInfo(@PathVariable String realmName, @PathVariable String collectionName,
             HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
 
-        RealmDescriptor realm = realmService.findByName(realmName);
-        if (authorize(realm, RealmOperation.GET_COLLECTION_INFO, servletRequest, servletResponse)) {
+        Named<RealmDescriptor> realm;
+        if ((realm = authorizedRealm(realmName, RealmOperation.GET_COLLECTION_INFO,
+                servletRequest, servletResponse)) != null) {
             return ResponseEntity.ok(new CollectionDescriptor());
         }
 
         return null;
     }
 
-    private boolean authorize(RealmDescriptor realm, RealmOperation requestedOp,
+    private Named<RealmDescriptor> authorizedRealm(String realmName, RealmOperation requestedOp,
             HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
 
-        boolean auth = false;
+        RealmDescriptor realm = realmService.findByName(realmName);
+        if (realm == null) {
+            servletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return null;
+        }
+
+        boolean authorized = false;
         RealmAuthenticator authenticator = realmService.authenticatorFor(realm);
         if (authenticator != null) {
             logger.debug("Authenticating with realm \"{}\" using authenticator {}.",
                     realm.description(), authenticator);
 
-            auth = authenticator.authorized(realm, requestedOp, servletRequest);
+            authorized = authenticator.authorized(realm, requestedOp, servletRequest);
         }
 
-        if (!auth) {
+        if (!authorized) {
             logger.warn("Not authorized for operation {}", requestedOp);
             servletResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return null;
         }
 
-        return auth;
+        return Named.of(realmName, realm);
     }
 }
