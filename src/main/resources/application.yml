@@ -1,8 +1,13 @@
 
 storage:
-  data-dir:
-  media-dir:
-  store-originals:
+  data-dir: "backgallery-data"
+  media-dir: "media"
+  store-originals: data-dir
+
+management:
+  security:
+    enabled: false
+  context-path: "/management"
 
 spring:
   main:
