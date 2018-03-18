@@ -69,7 +69,7 @@ public class CollectionController {
         RealmAuthenticator authenticator = coreService.authenticatorForRealm(realm);
         if (authenticator != null) {
             logger.debug("Authenticating with realm \"{}\" [{}] using authenticator {}.",
-                    realm.description(), namedRealm.name(), authenticator);
+                    realm.description(), namedRealm.name(), authenticator.getClass().getName());
 
             authorized = authenticator.authorized(realm, requestedOp, servletRequest);
         }

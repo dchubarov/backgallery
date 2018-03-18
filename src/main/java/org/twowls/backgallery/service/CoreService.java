@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.twowls.backgallery.model.*;
@@ -14,9 +15,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.function.Function;
+import java.util.Objects;
 
 /**
  * <p>TODO add documentation...</p>
@@ -26,17 +25,22 @@ import java.util.function.Function;
 @Service
 public class CoreService {
     private static final Logger logger = LoggerFactory.getLogger(CoreService.class);
-    private final ConcurrentMap<String, Equipped<?>> cache = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+    private final CacheService cache;
 
     @Value("${storage.data-dir}")
     private String dataDir;
 
+    @Autowired
+    CoreService(CacheService cache) {
+        this.cache = Objects.requireNonNull(cache, "Cache service is required");
+    }
+
     public Equipped<RealmDescriptor> findRealm(String realmName) {
-        return cached(realmName, RealmDescriptor.class, (name) -> {
+        return cache.getOrCreate(realmName, RealmDescriptor.class, (name) -> {
+            Path configPath = Paths.get(dataDir, name, RealmDescriptor.CONFIG).toAbsolutePath();
             try {
-                Path configPath = Paths.get(dataDir, name, RealmDescriptor.CONFIG).toAbsolutePath();
-                return Equipped.of(objectMapper.readValue(configPath.toFile(), RealmDescriptor.class), name);
+                return objectMapper.readValue(configPath.toFile(), RealmDescriptor.class);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -47,31 +51,15 @@ public class CoreService {
         return SimpleTokenAuthenticator.INSTANCE;
     }
 
-    public Equipped<CollectionDescriptor> findCollection(Named<RealmDescriptor> realm, String collectionName) {
-        return cached(collectionName, CollectionDescriptor.class, (name) -> {
+    public Equipped<CollectionDescriptor> findCollection(Equipped<RealmDescriptor> realm, String collectionName) {
+        return cache.getOrCreate(collectionName, CollectionDescriptor.class, (name) -> {
+            Path configPath = Paths.get(dataDir, realm.name(), name, CollectionDescriptor.CONFIG).toAbsolutePath();
             try {
-                Path configPath = Paths.get(dataDir, realm.name(), name, CollectionDescriptor.CONFIG).toAbsolutePath();
-                return Equipped.of(objectMapper.readValue(configPath.toFile(), CollectionDescriptor.class), name)
-                        .with("realm", realm);
+                return objectMapper.readValue(configPath.toFile(), CollectionDescriptor.class);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
-        });
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> Equipped<T> cached(String name, Class<T> clazz, Function<String, Equipped<?>> mapper) {
-        String normalizedName = Named.normalize(name);
-        Equipped<?> v = cache.computeIfAbsent(clazz.getName() + "$" + normalizedName, (key) -> {
-            logger.debug("Loading instance of type {} named \"{}\" into cache.", clazz, normalizedName);
-            return mapper.apply(normalizedName).with("loaded", System.nanoTime());
-        });
-
-        if (v != null && !v.bare().getClass().isAssignableFrom(clazz)) {
-            throw new IllegalStateException("Incompatible cache value class.");
-        }
-
-        return (Equipped<T>) v;
+        }).with("realm", realm);
     }
 
     private enum SimpleTokenAuthenticator implements RealmAuthenticator {

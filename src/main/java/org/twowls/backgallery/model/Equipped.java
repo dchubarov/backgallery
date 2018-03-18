@@ -4,10 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Represents an entity equipped with additional properties that
- * can anytime be added but never replaced or removed.
- *
- * TODO consider immutable properties
+ * Represents an entity equipped with additional properties.
  *
  * @param <T> the type of bare object.
  * @author Dmitry Chubarov
@@ -33,13 +30,7 @@ public class Equipped<T> implements Named<T> {
     }
 
     public Equipped<T> with(String key, Object value) {
-        String normalizedKey = Named.normalize(key);
-
-        properties.compute(normalizedKey, (k, v) -> {
-            if (v != null) throw new IllegalStateException("Property already exists: " + k);
-            return value;
-        });
-
+        properties.putIfAbsent(Named.normalize(key), value);
         return this;
     }
 
