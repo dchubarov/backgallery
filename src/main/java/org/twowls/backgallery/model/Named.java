@@ -7,30 +7,28 @@ import java.util.Objects;
 /**
  * Represents an entity identified by its name.
  *
+ * @param <T> type of bare object
  * @author Dmitry Chubarov
  */
-public class Named<T> {
-    private final String name;
-    private final T payload;
+public interface Named<T> {
 
-    private Named(String name, T payload) {
-        this.name = normalize(name);
-        this.payload = payload;
-    }
+    /**
+     * @return the name of this object.
+     */
+    String name();
 
-    public String name() {
-        return this.name;
-    }
+    /**
+     * @return the bare object, contract does not restrict usage of {@code null}s.
+     */
+    T bare();
 
-    public T payload() {
-        return this.payload;
-    }
-
-    public static String normalize(String name) {
+    /**
+     * Creates and returns normalized name based on given name, may throw unchecked exceptions.
+     *
+     * @param name the source name.
+     * @return the normalized name.
+     */
+    static String normalize(String name) {
         return Objects.requireNonNull(StringUtils.trimToEmpty(name));
-    }
-
-    public static <T> Named<T> of(String name, T payload) {
-        return new Named<>(name, payload);
     }
 }

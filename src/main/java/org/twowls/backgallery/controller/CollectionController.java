@@ -8,12 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import org.twowls.backgallery.model.CollectionDescriptor;
-import org.twowls.backgallery.model.Named;
-import org.twowls.backgallery.model.RealmDescriptor;
-import org.twowls.backgallery.model.RealmOperation;
+import org.twowls.backgallery.model.*;
 import org.twowls.backgallery.service.RealmAuthenticator;
-import org.twowls.backgallery.service.RealmService;
+import org.twowls.backgallery.service.CoreService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,11 +24,11 @@ import java.util.Objects;
 @RestController
 public class CollectionController {
     private static final Logger logger = LoggerFactory.getLogger(CollectionController.class);
-    private final RealmService realmService;
+    private final CoreService coreService;
 
     @Autowired
-    CollectionController(RealmService realmService) {
-        this.realmService = Objects.requireNonNull(realmService);
+    CollectionController(CoreService coreService) {
+        this.coreService = Objects.requireNonNull(coreService);
     }
 
     @GetMapping(value = "/{realmName}/{collectionName}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -39,39 +36,51 @@ public class CollectionController {
     collectionInfo(@PathVariable String realmName, @PathVariable String collectionName,
             HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
 
-        Named<RealmDescriptor> realm;
+        Equipped<RealmDescriptor> realm;
         if ((realm = authorizedRealm(realmName, RealmOperation.GET_COLLECTION_INFO,
                 servletRequest, servletResponse)) != null) {
-            return ResponseEntity.ok(new CollectionDescriptor());
+
+            Equipped<CollectionDescriptor> coll;
+            if ((coll = coreService.findCollection(realm, collectionName)) == null) {
+                logger.warn("Could not access collection \"{}.{}\"", realm.name(), collectionName);
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok(coll.bare());
         }
 
         return null;
     }
 
-    private Named<RealmDescriptor> authorizedRealm(String realmName, RealmOperation requestedOp,
+    private Equipped<RealmDescriptor> authorizedRealm(String realmName, RealmOperation requestedOp,
             HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
 
-        RealmDescriptor realm = realmService.findByName(realmName);
-        if (realm == null) {
+        Equipped<RealmDescriptor> namedRealm;
+        try {
+            namedRealm = coreService.findRealm(realmName);
+        } catch (Exception e) {
+            logger.warn("Could not find realm \"" + realmName + "\".");
             servletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return null;
         }
 
         boolean authorized = false;
-        RealmAuthenticator authenticator = realmService.authenticatorFor(realm);
+        RealmDescriptor realm = namedRealm.bare();
+        RealmAuthenticator authenticator = coreService.authenticatorForRealm(realm);
         if (authenticator != null) {
-            logger.debug("Authenticating with realm \"{}\" using authenticator {}.",
-                    realm.description(), authenticator);
+            logger.debug("Authenticating with realm \"{}\" [{}] using authenticator {}.",
+                    realm.description(), namedRealm.name(), authenticator);
 
             authorized = authenticator.authorized(realm, requestedOp, servletRequest);
         }
 
         if (!authorized) {
-            logger.warn("Not authorized for operation {}", requestedOp);
+            logger.warn("Could not authorize with realm \"{}\" [{}] for operation {}.",
+                    realm.description(), namedRealm.name(), requestedOp);
             servletResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         }
 
-        return Named.of(realmName, realm);
+        return namedRealm;
     }
 }

@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author Dmitry Chubarov
  */
 public class CollectionDescriptor {
+    public static final String CONFIG = "collection.yml";
+
     @JsonProperty
     private String description;
 
