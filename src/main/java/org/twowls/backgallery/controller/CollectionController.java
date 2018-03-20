@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.twowls.backgallery.model.*;
 import org.twowls.backgallery.service.RealmAuthenticator;
 import org.twowls.backgallery.service.CoreService;
+import org.twowls.backgallery.utils.Equipped;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

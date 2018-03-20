@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.twowls.backgallery.model.*;
+import org.twowls.backgallery.utils.Equipped;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;

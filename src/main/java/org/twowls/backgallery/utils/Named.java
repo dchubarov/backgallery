@@ -1,4 +1,4 @@
-package org.twowls.backgallery.model;
+package org.twowls.backgallery.utils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,6 +21,18 @@ public interface Named<T> {
      * @return the bare object, contract does not restrict usage of {@code null}s.
      */
     T bare();
+
+    /**
+     * Returns bare object cast to desired type.
+     *
+     * @param <U> the target type.
+     * @param target the target class.
+     * @return the bare object cast to {@code targetClass}.
+     * @throws ClassCastException if the bare object is not assignable to the type {@code U}.
+     */
+    default <U> U bare(Class<U> target) {
+        return Objects.requireNonNull(target).cast(bare());
+    }
 
     /**
      * Creates and returns normalized name based on given name, may throw unchecked exceptions.

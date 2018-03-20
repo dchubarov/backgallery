@@ -1,5 +1,7 @@
-package org.twowls.backgallery.model;
+package org.twowls.backgallery.utils;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -32,6 +34,14 @@ public class Equipped<T> implements Named<T> {
     public Equipped<T> with(String key, Object value) {
         properties.putIfAbsent(Named.normalize(key), value);
         return this;
+    }
+
+    public Object prop(String key) {
+        return Optional.ofNullable(properties.get(Named.normalize(key)));
+    }
+
+    public <U> U prop(String key, Class<U> target) {
+        return Objects.requireNonNull(target).cast(prop(key));
     }
 
     public static <T> Equipped<T> of(T obj, String name) {
