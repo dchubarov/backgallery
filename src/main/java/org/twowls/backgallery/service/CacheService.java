@@ -3,8 +3,8 @@ package org.twowls.backgallery.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.twowls.backgallery.model.Equipped;
-import org.twowls.backgallery.model.Named;
+import org.twowls.backgallery.utils.Equipped;
+import org.twowls.backgallery.utils.Named;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,5 +41,9 @@ public class CacheService {
         }
 
         return (Equipped<T>) entry;
+    }
+
+    public Equipped<?> evict(String key) {
+        return data.remove(Named.normalize(key));
     }
 }
