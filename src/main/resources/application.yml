@@ -9,6 +9,13 @@ management:
     enabled: false
   context-path: "/management"
 
+server:
+  port: 8080
+
 spring:
   main:
     banner-mode: off
+  http:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
