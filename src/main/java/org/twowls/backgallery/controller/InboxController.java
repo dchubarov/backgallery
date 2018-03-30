@@ -1,5 +1,6 @@
 package org.twowls.backgallery.controller;
 
+import org.hashids.Hashids;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * <p>TODO add documentation...</p>
@@ -75,5 +77,16 @@ public class InboxController extends AbstractAuthenticatingController {
             HttpServletRequest request, HttpServletResponse response) {
         Map<String, ?> attr = RequestContextUtils.getInputFlashMap(request);
         logger.info(attr.toString());
+
+        // 1. create image-id
+        // 2. check realm & collection match
+        // 3. check file info matches
+        // 4. move file to inbox
+        // 5. create image descriptor
+
+        // TODO temporary image id generation
+        Hashids h = new Hashids("4NtzCVXAnELUvezek3cN7jaXRPKV", 5, "abcdefghijklmnopqrstuvwxyz");
+        logger.info("Create new id: {}", h.encode((Objects.hash(realmName, collectionName,
+                System.currentTimeMillis()) >> 8) & 0xffff));
     }
 }
