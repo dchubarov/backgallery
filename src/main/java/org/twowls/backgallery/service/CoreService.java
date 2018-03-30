@@ -71,7 +71,7 @@ public class CoreService {
         INSTANCE;
 
         @Override
-        public boolean authorized(RealmDescriptor realm, RealmOperation requestedOp, HttpServletRequest request) {
+        public boolean authorized(RealmOperation requestedOp, RealmDescriptor realm, HttpServletRequest request) {
             String inboundToken = request.getHeader("X-AccessToken");
             if (StringUtils.isBlank(inboundToken)) {
                 inboundToken = request.getParameter("token");

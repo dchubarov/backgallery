@@ -12,6 +12,6 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface RealmAuthenticator {
 
-    boolean authorized(RealmDescriptor realm, RealmOperation requestedOp, HttpServletRequest request);
+    boolean authorized(RealmOperation requestedOp, RealmDescriptor realm, HttpServletRequest request);
 
 }

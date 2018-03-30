@@ -55,7 +55,7 @@ abstract class AbstractAuthenticatingController {
             logger.debug("Authenticating with realm \"{}\" [{}] using authenticator {}.",
                     realm.description(), namedRealm.name(), authenticator.getClass().getName());
 
-            authorized = authenticator.authorized(realm, requestedOp, servletRequest);
+            authorized = authenticator.authorized(requestedOp, realm, servletRequest);
         }
 
         if (!authorized) {
