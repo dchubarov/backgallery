@@ -23,7 +23,7 @@ public class CacheService {
     private final ConcurrentMap<String, Equipped<?>> data = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
-    public <T> Equipped<T> getOrCreate(String key, Class<T> bareClass, Function<String, ? extends T> factory) {
+    public <T> Equipped<T> getOrCreate(String key, Class<? extends T> bareClass, Function<String, ? extends T> factory) {
         String normalizedKey = Named.normalize(key);
         Objects.requireNonNull(factory);
 
@@ -35,7 +35,7 @@ public class CacheService {
         });
 
         // check whether cached object is compatible with requested class
-        if (entry != null && entry.bare() != null && !entry.bare().getClass().isAssignableFrom(bareClass)) {
+        if (entry != null && entry.bare() != null && !bareClass.isAssignableFrom(entry.bare().getClass())) {
             throw new IllegalStateException("Requested class " + bareClass + " is not compatible with cached entry " +
                     "which contains instance of class " + entry.bare().getClass() + ".");
         }

@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.twowls.backgallery.model.*;
+import org.twowls.backgallery.model.json.CollectionDescriptorJson;
+import org.twowls.backgallery.model.json.RealmDescriptorJson;
 import org.twowls.backgallery.utils.Equipped;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,8 +43,9 @@ public class CoreService {
         return cache.getOrCreate(realmName, RealmDescriptor.class, (name) -> {
             Path configPath = Paths.get(dataDir, name, RealmDescriptor.CONFIG).toAbsolutePath();
             try {
-                return objectMapper.readValue(configPath.toFile(), RealmDescriptor.class);
+                return objectMapper.readValue(configPath.toFile(), RealmDescriptorJson.class);
             } catch (IOException e) {
+                logger.error("Error reading realm configuration: " + name, e);
                 throw new UncheckedIOException(e);
             }
         });
@@ -56,8 +59,9 @@ public class CoreService {
         return cache.getOrCreate(collectionName, CollectionDescriptor.class, (name) -> {
             Path configPath = Paths.get(dataDir, realm.name(), name, CollectionDescriptor.CONFIG).toAbsolutePath();
             try {
-                return objectMapper.readValue(configPath.toFile(), CollectionDescriptor.class);
+                return objectMapper.readValue(configPath.toFile(), CollectionDescriptorJson.class);
             } catch (IOException e) {
+                logger.error("Error reading collection configuration: " + realm.name() + "." + name, e);
                 throw new UncheckedIOException(e);
             }
         }).with("realm", realm);

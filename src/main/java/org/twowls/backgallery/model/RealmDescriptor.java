@@ -1,7 +1,5 @@
 package org.twowls.backgallery.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * Represents an individual realm in a backgallery database.
  *
@@ -9,12 +7,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class RealmDescriptor {
     public static final String CONFIG = "realm.yml";
-
-    @JsonProperty(value = "description")
     private String description;
-
-    @JsonProperty(value = "security-token")
     private String securityToken;
+
+    protected RealmDescriptor(String description, String securityToken) {
+        this.description = description;
+        this.securityToken = securityToken;
+    }
 
     public String description() {
         return this.description;
@@ -22,5 +21,13 @@ public class RealmDescriptor {
 
     public String securityToken() {
         return this.securityToken;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{ " +
+                "description=" + description +
+                ", securityToken=" + (securityToken == null ? null : "***") +
+                "}";
     }
 }
