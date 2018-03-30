@@ -2,6 +2,7 @@ package org.twowls.backgallery.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.RealmOperation;
 import org.twowls.backgallery.service.CoreService;
@@ -28,14 +29,14 @@ abstract class AbstractAuthenticatingController {
     /**
      * Returns requested realm's info ensuring authentication.
      *
-     * @param realmName the requested realm name.
      * @param requestedOp the requested operation.
+     * @param realmName the requested realm name.
      * @param servletRequest current request.
      * @param servletResponse current response.
      * @return an {@link Equipped}-wrapped {@link RealmDescriptor} instance or {@code null}
      *  if requested realm could not be found/authenticated.
      */
-    Equipped<RealmDescriptor> authorizedRealm(String realmName, RealmOperation requestedOp,
+    Equipped<RealmDescriptor> authorizedRealm(RealmOperation requestedOp, String realmName,
             HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
 
         Equipped<RealmDescriptor> namedRealm;
@@ -65,5 +66,20 @@ abstract class AbstractAuthenticatingController {
         }
 
         return namedRealm;
+    }
+
+    Equipped<CollectionDescriptor> authorizedCollection(RealmOperation requestedOp, String realmName,
+            String collectionName, HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+        Equipped<RealmDescriptor> realm;
+        if ((realm = authorizedRealm(requestedOp, realmName, servletRequest, servletResponse)) != null) {
+            try {
+                return coreService.findCollection(realm, collectionName);
+            } catch (Exception e) {
+                logger.warn("Collection {}.{} not found.", realmName, collectionName);
+                servletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            }
+        }
+
+        return null;
     }
 }

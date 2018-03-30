@@ -7,10 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.RealmOperation;
 import org.twowls.backgallery.service.CoreService;
-import org.twowls.backgallery.utils.Equipped;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,29 +32,30 @@ public class InboxController extends AbstractAuthenticatingController {
     }
 
     @PutMapping(value = "upload")
-    public ModelAndView handleUpload(@PathVariable String realmName, @PathVariable String collectionName,
+    public ModelAndView
+    handleUpload(@PathVariable String realmName, @PathVariable String collectionName,
             @RequestParam("file") MultipartFile uploadedFile, HttpServletRequest servletRequest,
             HttpServletResponse servletResponse, RedirectAttributes redirectAttributes) {
 
-        Equipped<RealmDescriptor> realm;
-        if ((realm = authorizedRealm(realmName, RealmOperation.UPLOAD_IMAGE, servletRequest, servletResponse)) != null) {
-            logger.info("Uploaded {}, {} byte(s)", uploadedFile.getOriginalFilename(), uploadedFile.getSize());
-            try {
-                Path tempFile = Files.createTempFile("uploaded", ".tmp");
-                uploadedFile.transferTo(tempFile.toFile());
-
-                redirectAttributes.addFlashAttribute("transmission-file", tempFile);
-                redirectAttributes.addFlashAttribute("target-collection", collectionName);
-                logger.debug("Uploaded data saved to {}", tempFile);
-            } catch (IOException e) {
-                logger.error("Could not save uploaded data to temporary file.", e);
-            }
-
-            redirectAttributes.addFlashAttribute("original-name", uploadedFile.getOriginalFilename());
-            return new ModelAndView("redirect:uploaded");
+        if (authorizedCollection(RealmOperation.UPLOAD_IMAGE, realmName,
+                collectionName, servletRequest, servletResponse) == null) {
+            return null;
         }
 
-        return null;
+        logger.info("Uploaded {}, {} byte(s)", uploadedFile.getOriginalFilename(), uploadedFile.getSize());
+        try {
+            Path tempFile = Files.createTempFile("uploaded", ".tmp");
+            uploadedFile.transferTo(tempFile.toFile());
+
+            redirectAttributes.addFlashAttribute("transmission-file", tempFile);
+            logger.debug("Uploaded data saved to {}", tempFile);
+        } catch (IOException e) {
+            logger.error("Could not save uploaded data to temporary file.", e);
+        }
+
+        redirectAttributes.addFlashAttribute("original-name", uploadedFile.getOriginalFilename());
+        redirectAttributes.addFlashAttribute("target-collection", collectionName);
+        return new ModelAndView("redirect:uploaded");
     }
 
     @GetMapping(value = "uploaded")
