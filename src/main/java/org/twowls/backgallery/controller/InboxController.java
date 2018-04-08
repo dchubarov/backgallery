@@ -18,7 +18,6 @@ import org.twowls.backgallery.service.CoreService;
 import org.twowls.backgallery.utils.Equipped;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
 import java.util.Objects;
@@ -48,24 +47,24 @@ public class InboxController extends AbstractAuthenticatingController {
             @RequestParam("file") MultipartFile file, WebRequest request,
             RedirectAttributes redirectAttributes) {
 
-        return doAuthorized(RealmOperation.UPLOAD_IMAGE, request, (descriptor) -> {
+        return doAuthorized(RealmOperation.UPLOAD_IMAGE, request, (coll) -> {
             logger.info("Uploaded {} [{}], {} byte(s)", file.getOriginalFilename(),
                     file.getContentType(), file.getSize());
 
-            try {
+//            try {
                 // transfer uploaded content to temporary file
                 File tempFile = Files.createTempFile("upload", ".tmp").toFile();
                 file.transferTo(tempFile);
 
                 redirectAttributes.addFlashAttribute(TRANSIT_FILE_ATTR, tempFile);
                 logger.debug("Uploaded data saved to temporary file {}", tempFile);
-            } catch (IOException e) {
-                logger.error("Could not save uploaded data to temporary file.", e);
-            }
+//            } catch (IOException e) {
+//                logger.error("Could not save uploaded data to temporary file.", e);
+//            }
 
             // save attributes and redirect
             redirectAttributes.addFlashAttribute(ORIGINAL_NAME_ATTR, file.getOriginalFilename());
-            redirectAttributes.addFlashAttribute(TARGET_COLLECTION_ATTR, descriptor.name());
+            redirectAttributes.addFlashAttribute(TARGET_COLLECTION_ATTR, coll.name());
             redirectAttributes.addFlashAttribute(CONTENT_TYPE_ATTR, file.getContentType());
             redirectAttributes.addFlashAttribute(FILE_SIZE_ATTR, file.getSize());
             return new ModelAndView("redirect:uploaded");
