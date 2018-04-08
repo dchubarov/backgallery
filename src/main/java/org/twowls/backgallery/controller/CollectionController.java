@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.twowls.backgallery.model.CollectionDescriptor;
@@ -18,6 +19,7 @@ import org.twowls.backgallery.service.CoreService;
  * @author Dmitry Chubarov
  */
 @RestController
+@RequestMapping("/{realmName}/{collectionName}")
 public class CollectionController extends AbstractAuthenticatingController {
     private static final Logger logger = LoggerFactory.getLogger(CollectionController.class);
 
@@ -26,7 +28,7 @@ public class CollectionController extends AbstractAuthenticatingController {
         super(coreService);
     }
 
-    @GetMapping(value = "/{realmName}/{collectionName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CollectionDescriptor>
     collectionInfo(WebRequest request) throws Exception {
         return ifAuthorizedInCollection(UserOperation.GET_COLLECTION_INFO, request,
