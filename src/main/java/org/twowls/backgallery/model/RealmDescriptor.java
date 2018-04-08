@@ -5,7 +5,7 @@ package org.twowls.backgallery.model;
  *
  * @author Dmitry Chubarov
  */
-public class RealmDescriptor {
+public class RealmDescriptor implements Descriptor {
     public static final String CONFIG = "realm.yml";
     private String description;
     private String securityToken;

@@ -5,7 +5,7 @@ package org.twowls.backgallery.model;
  *
  * @author Dmitry Chubarov
  */
-public class ImageDescriptor {
+public class ImageDescriptor implements Descriptor {
     private final String id;
 
     protected ImageDescriptor(String id) {

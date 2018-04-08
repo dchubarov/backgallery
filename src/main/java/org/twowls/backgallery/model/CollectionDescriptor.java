@@ -8,7 +8,7 @@ import java.util.Map;
  *
  * @author Dmitry Chubarov
  */
-public class CollectionDescriptor {
+public class CollectionDescriptor implements Descriptor {
     public static final String CONFIG = "collection.yml";
     private final Map<String, Integer> sizes = new HashMap<>();
     private final String description;

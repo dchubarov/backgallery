@@ -1,9 +1,8 @@
 package org.twowls.backgallery.service;
 
+import org.springframework.web.context.request.WebRequest;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.RealmOperation;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * <p>TODO add documentation...</p>
@@ -12,6 +11,6 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface RealmAuthenticator {
 
-    boolean authorized(RealmOperation requestedOp, RealmDescriptor realm, HttpServletRequest request);
+    boolean authorized(RealmOperation requestedOp, RealmDescriptor realm, WebRequest request);
 
 }

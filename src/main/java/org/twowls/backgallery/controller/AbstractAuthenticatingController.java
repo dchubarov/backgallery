@@ -1,17 +1,21 @@
 package org.twowls.backgallery.controller;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.HandlerMapping;
 import org.twowls.backgallery.model.CollectionDescriptor;
+import org.twowls.backgallery.model.Descriptor;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.RealmOperation;
 import org.twowls.backgallery.service.CoreService;
 import org.twowls.backgallery.service.RealmAuthenticator;
 import org.twowls.backgallery.utils.Equipped;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * <p>TODO add documentation...</p>
@@ -26,60 +30,31 @@ abstract class AbstractAuthenticatingController {
         this.coreService = Objects.requireNonNull(coreService);
     }
 
-    /**
-     * Returns requested realm's info ensuring authentication.
-     *
-     * @param requestedOp the requested operation.
-     * @param realmName the requested realm name.
-     * @param servletRequest current request.
-     * @param servletResponse current response.
-     * @return an {@link Equipped}-wrapped {@link RealmDescriptor} instance or {@code null}
-     *  if requested realm could not be found/authenticated.
-     */
-    Equipped<RealmDescriptor> authorizedRealm(RealmOperation requestedOp, String realmName,
-            HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+    <R> R doAuthorized(RealmOperation requestedOp, WebRequest request, Function<Equipped<? extends Descriptor>, R> handler) {
+        Map m = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, WebRequest.SCOPE_REQUEST);
+        String realmName = null, collectionName = null;
 
-        Equipped<RealmDescriptor> namedRealm;
-        try {
-            namedRealm = coreService.findRealm(realmName);
-        } catch (Exception e) {
-            logger.warn("Could not find realm \"" + realmName + "\".");
-            servletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return null;
+        if (m != null) {
+            realmName = (String) m.get("realmName");
+            collectionName = (String) m.get("collectionName");
         }
 
-        boolean authorized = false;
-        RealmDescriptor realm = namedRealm.bare();
-        RealmAuthenticator authenticator = coreService.authenticatorForRealm(realm);
-        if (authenticator != null) {
-            logger.debug("Authenticating with realm \"{}\" [{}] using authenticator {}.",
-                    realm.description(), namedRealm.name(), authenticator.getClass().getName());
-
-            authorized = authenticator.authorized(requestedOp, realm, servletRequest);
-        }
-
-        if (!authorized) {
-            logger.warn("Could not authorize with realm \"{}\" [{}] for operation {}.",
-                    realm.description(), namedRealm.name(), requestedOp);
-            servletResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
-        }
-
-        return namedRealm;
-    }
-
-    Equipped<CollectionDescriptor> authorizedCollection(RealmOperation requestedOp, String realmName,
-            String collectionName, HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
-        Equipped<RealmDescriptor> realm;
-        if ((realm = authorizedRealm(requestedOp, realmName, servletRequest, servletResponse)) != null) {
-            try {
-                return coreService.findCollection(realm, collectionName);
-            } catch (Exception e) {
-                logger.warn("Collection {}.{} not found.", realmName, collectionName);
-                servletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        if (!StringUtils.isBlank(realmName)) {
+            Equipped<RealmDescriptor> realm = coreService.findRealm(realmName);
+            RealmAuthenticator authenticator = coreService.authenticatorForRealm(realm.bare());
+            if (authenticator.authorized(requestedOp, realm.bare(), request)) {
+                if (StringUtils.isBlank(collectionName)) {
+                    return handler.apply(realm);
+                } else {
+                    Equipped<CollectionDescriptor> coll = coreService.findCollection(realm, collectionName);
+                    if (coll != null) {
+                        return handler.apply(coll);
+                    }
+                }
             }
         }
 
-        return null;
+        // TODO not ise
+        throw new IllegalStateException("Cannot do authorized");
     }
 }

@@ -1,7 +1,6 @@
 package org.twowls.backgallery.utils;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -37,11 +36,23 @@ public class Equipped<T> implements Named<T> {
     }
 
     public Object prop(String key) {
-        return Optional.ofNullable(properties.get(Named.normalize(key)));
+        return properties.get(Named.normalize(key));
     }
 
     public <U> U prop(String key, Class<U> target) {
         return Objects.requireNonNull(target).cast(prop(key));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <V> Equipped<V> equippedProp(String key, Class<V> target) {
+        Objects.requireNonNull(target);
+        Equipped<?> e = (Equipped<?>) prop(key);
+        Class<?> bareClass = (e != null && e.bare() != null ? e.bare().getClass() : null);
+        if (bareClass == null || !target.isAssignableFrom(bareClass)) {
+            throw new ClassCastException("Expected equipped property " + key + " with payload class " +
+                    target + ", while real class is " + bareClass);
+        }
+        return (Equipped<V>) e;
     }
 
     public static <T> Equipped<T> of(T obj, String name) {
