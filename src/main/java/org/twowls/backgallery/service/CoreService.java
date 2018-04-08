@@ -31,7 +31,7 @@ public class CoreService {
     private final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
     private final CacheService cache;
 
-    @Value("${storage.data-dir}")
+    @Value("${backgallery.storage.data-dir}")
     private String dataDir;
 
     @Autowired
