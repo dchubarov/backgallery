@@ -5,7 +5,7 @@ package org.twowls.backgallery.model;
  *
  * @author Dmitry Chubarov
  */
-public enum RealmOperation {
+public enum UserOperation {
     GET_COLLECTION_INFO,
     UPLOAD_IMAGE
 }

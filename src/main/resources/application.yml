@@ -8,11 +8,6 @@ backgallery:
 server:
   port: 8080
 
-management:
-  security:
-    enabled: false
-  context-path: "/management"
-
 spring:
   main:
     banner-mode: off
@@ -20,3 +15,8 @@ spring:
     multipart:
       max-file-size: 20MB
       max-request-size: 20MB
+
+management:
+  context-path: "/management"
+  security:
+    enabled: false

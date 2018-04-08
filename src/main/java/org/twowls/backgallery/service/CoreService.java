@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.WebRequest;
 import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.RealmDescriptor;
-import org.twowls.backgallery.model.RealmOperation;
+import org.twowls.backgallery.model.UserOperation;
 import org.twowls.backgallery.model.json.CollectionDescriptorJson;
 import org.twowls.backgallery.model.json.RealmDescriptorJson;
 import org.twowls.backgallery.utils.Equipped;
@@ -77,7 +77,7 @@ public class CoreService {
         INSTANCE;
 
         @Override
-        public boolean authorized(RealmOperation requestedOp, RealmDescriptor realm, WebRequest request) {
+        public boolean authorized(UserOperation requestedOp, RealmDescriptor realm, WebRequest request) {
             return checkToken(StringUtils.defaultIfBlank(request.getHeader(TOKEN_HEADER),
                     request.getParameter(TOKEN_PARAM)), realm);
         }
