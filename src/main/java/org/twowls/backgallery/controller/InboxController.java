@@ -24,6 +24,9 @@ import org.twowls.backgallery.utils.Equipped;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
 
@@ -47,10 +50,37 @@ public class InboxController extends AbstractAuthenticatingController {
         super(contentService);
     }
 
-    @PutMapping(value = "upload")
-    public ModelAndView handleUpload(
-            @RequestParam("file") MultipartFile file, WebRequest request,
+    @PutMapping(value = "pull")
+    public ModelAndView pullLocalFile(WebRequest request, @RequestParam String localPath,
             RedirectAttributes redirectAttributes) throws ApiException {
+
+        return ifAuthorizedInCollection(UserOperation.UPLOAD_IMAGE, request, (coll) -> {
+            // TODO double check, security considerations
+            Path path = Paths.get(localPath);
+            if (!Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS) || !Files.isReadable(path)) {
+                throw new InvalidRequestException("Local file is not readable: " + path);
+            }
+
+            long size;
+            try {
+                size = Files.size(path);
+            } catch (IOException e) {
+                throw new DataProcessingException("Could not get file info: " + path, e);
+            }
+
+            // save attributes and redirect
+            redirectAttributes.addFlashAttribute(TRANSIT_FILE_ATTR, path.toFile());
+            redirectAttributes.addFlashAttribute(ORIGINAL_NAME_ATTR, path.getFileName().toString());
+            redirectAttributes.addFlashAttribute(TARGET_COLLECTION_ATTR, coll.name());
+            redirectAttributes.addFlashAttribute(FILE_SIZE_ATTR, size);
+
+            return new ModelAndView("redirect:uploaded");
+        }).orElseThrow(UnauthorizedException::new);
+    }
+
+    @PutMapping(value = "upload")
+    public ModelAndView uploadFile(@RequestParam("file") MultipartFile file,
+            WebRequest request, RedirectAttributes redirectAttributes) throws ApiException {
 
         return ifAuthorizedInCollection(UserOperation.UPLOAD_IMAGE, request, (coll) -> {
             logger.info("Uploaded {} [{}], {} byte(s)", file.getOriginalFilename(),
@@ -78,10 +108,8 @@ public class InboxController extends AbstractAuthenticatingController {
     }
 
     @GetMapping(value = "uploaded")
-    public void postUpload(@PathVariable String realmName, @PathVariable String collectionName,
-            WebRequest request) throws ApiException {
-
-        ifAuthorizedInCollection(UserOperation.UPLOAD_IMAGE, request, (coll) -> {
+    public ModelAndView postUpload(@PathVariable String realmName, WebRequest request) throws ApiException {
+        return ifAuthorizedInCollection(UserOperation.UPLOAD_IMAGE, request, (coll) -> {
             Map attr = (Map) request.getAttribute(DispatcherServlet.INPUT_FLASH_MAP_ATTRIBUTE, WebRequest.SCOPE_REQUEST);
             logger.info(attr.toString());
 
@@ -94,17 +122,24 @@ public class InboxController extends AbstractAuthenticatingController {
                         (targetColl != null ? targetColl.name() : null));
             }
 
+            // 1. create image-id
+            // 2. check realm & collection match
+            // 3. check file info matches
+            // 4. move file to inbox
+            // 5. create image descriptor
+
             Hashids h = new Hashids("4NtzCVXAnELUvezek3cN7jaXRPKV", 5, "abcdefhijkmnpqrstuvwxyz");
-            logger.info("Create new id: {}", h.encode((Objects.hash(realmName, coll.name(),
-                    System.currentTimeMillis()) >> 7) & 0xffff));
+            String newId = h.encode((Objects.hash(realmName, coll.name(), System.currentTimeMillis()) >> 7) & 0xffff);
+            logger.info("Create new id: {}", newId);
 
-            return Boolean.TRUE;
+            return new ModelAndView("redirect:i/" + newId);
         }).orElseThrow(UnauthorizedException::new);
+    }
 
-        // 1. create image-id
-        // 2. check realm & collection match
-        // 3. check file info matches
-        // 4. move file to inbox
-        // 5. create image descriptor
+    @GetMapping(value = "i/{imageId}")
+    public @ResponseBody String imageInfo(WebRequest request, @PathVariable String imageId) throws ApiException {
+        // TODO actually provide image info to client
+        return ifAuthorizedInCollection(UserOperation.GET_IMAGE_INFO, request, (coll) -> imageId)
+                .orElseThrow(UnauthorizedException::new);
     }
 }

@@ -7,5 +7,6 @@ package org.twowls.backgallery.model;
  */
 public enum UserOperation {
     GET_COLLECTION_INFO,
-    UPLOAD_IMAGE
+    UPLOAD_IMAGE,
+    GET_IMAGE_INFO,
 }
