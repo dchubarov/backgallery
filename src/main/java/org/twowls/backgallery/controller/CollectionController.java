@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
+import org.twowls.backgallery.exception.ApiException;
+import org.twowls.backgallery.exception.UnauthorizedException;
 import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.UserOperation;
 import org.twowls.backgallery.service.ContentService;
@@ -30,9 +32,9 @@ public class CollectionController extends AbstractAuthenticatingController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CollectionDescriptor>
-    collectionInfo(WebRequest request) throws Exception {
-        return ifAuthorized(UserOperation.GET_COLLECTION_INFO, request,
+    collectionInfo(WebRequest request) throws ApiException {
+        return ifAuthorizedInCollection(UserOperation.GET_COLLECTION_INFO, request,
                 (coll) -> ResponseEntity.ok(coll.bare(CollectionDescriptor.class)))
-                .orElseThrow(() -> new IllegalStateException("Not authorized"));
+                .orElseThrow(UnauthorizedException::new);
     }
 }

@@ -11,6 +11,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.twowls.backgallery.exception.ApiException;
+import org.twowls.backgallery.exception.DataProcessingException;
+import org.twowls.backgallery.exception.InvalidRequestException;
+import org.twowls.backgallery.exception.UnauthorizedException;
 import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.UserOperation;
@@ -18,6 +22,7 @@ import org.twowls.backgallery.service.ContentService;
 import org.twowls.backgallery.utils.Equipped;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
 import java.util.Objects;
@@ -42,18 +47,22 @@ public class InboxController extends AbstractAuthenticatingController {
         super(contentService);
     }
 
-    // TODO no throws Exception, no ISE
     @PutMapping(value = "upload")
     public ModelAndView handleUpload(
             @RequestParam("file") MultipartFile file, WebRequest request,
-            RedirectAttributes redirectAttributes) throws Exception {
+            RedirectAttributes redirectAttributes) throws ApiException {
 
-        return ifAuthorized(UserOperation.UPLOAD_IMAGE, request, (coll) -> {
+        return ifAuthorizedInCollection(UserOperation.UPLOAD_IMAGE, request, (coll) -> {
             logger.info("Uploaded {} [{}], {} byte(s)", file.getOriginalFilename(),
                     file.getContentType(), file.getSize());
 
-            File tempFile = Files.createTempFile("upload", ".tmp").toFile();
-            file.transferTo(tempFile);
+            File tempFile;
+            try {
+                tempFile = Files.createTempFile("upload", ".tmp").toFile();
+                file.transferTo(tempFile);
+            } catch (IOException e) {
+                throw new DataProcessingException("Failed to save uploaded data to a temporary file.", e);
+            }
 
             logger.debug("Uploaded data saved to temporary file {}", tempFile);
 
@@ -65,13 +74,14 @@ public class InboxController extends AbstractAuthenticatingController {
             redirectAttributes.addFlashAttribute(FILE_SIZE_ATTR, file.getSize());
 
             return new ModelAndView("redirect:uploaded");
-        }).orElseThrow(() -> new IllegalStateException("Not authorized"));
+        }).orElseThrow(UnauthorizedException::new);
     }
 
-    // TODO no throws Exception, no ISE
     @GetMapping(value = "uploaded")
-    public void postUpload(@PathVariable String realmName, @PathVariable String collectionName, WebRequest request) throws Exception {
-        ifAuthorized(UserOperation.UPLOAD_IMAGE, request, (coll) -> {
+    public void postUpload(@PathVariable String realmName, @PathVariable String collectionName,
+            WebRequest request) throws ApiException {
+
+        ifAuthorizedInCollection(UserOperation.UPLOAD_IMAGE, request, (coll) -> {
             Map attr = (Map) request.getAttribute(DispatcherServlet.INPUT_FLASH_MAP_ATTRIBUTE, WebRequest.SCOPE_REQUEST);
             logger.info(attr.toString());
 
@@ -80,9 +90,8 @@ public class InboxController extends AbstractAuthenticatingController {
                     (String) attr.get(TARGET_COLLECTION_ATTR));
 
             if (targetColl == null || !StringUtils.equals(coll.name(), targetColl.name())) {
-                logger.error("Image initially uploaded to another collection: " +
-                        (targetColl != null ? targetColl.name() : "<unknown>"));
-                throw new IllegalStateException("Invalid target coll");
+                throw new InvalidRequestException("Current collection does not match upload target: " +
+                        (targetColl != null ? targetColl.name() : null));
             }
 
             Hashids h = new Hashids("4NtzCVXAnELUvezek3cN7jaXRPKV", 5, "abcdefhijkmnpqrstuvwxyz");
@@ -90,7 +99,7 @@ public class InboxController extends AbstractAuthenticatingController {
                     System.currentTimeMillis()) >> 7) & 0xffff));
 
             return Boolean.TRUE;
-        }).orElseThrow(() -> new IllegalStateException("Not authorized"));
+        }).orElseThrow(UnauthorizedException::new);
 
         // 1. create image-id
         // 2. check realm & collection match

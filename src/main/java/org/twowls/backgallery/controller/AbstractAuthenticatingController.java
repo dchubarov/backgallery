@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.HandlerMapping;
+import org.twowls.backgallery.exception.ApiException;
 import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.UserOperation;
@@ -42,9 +43,9 @@ abstract class AbstractAuthenticatingController {
      * @param <R>
      * @return
      */
-    <R> Optional<R> ifAuthorized(UserOperation requestedOperation, WebRequest request,
-            ThrowingFunction<Equipped<? extends CollectionDescriptor>, R, ? extends Exception> handler)
-            throws Exception {
+    <R> Optional<R> ifAuthorizedInCollection(UserOperation requestedOperation, WebRequest request,
+            ThrowingFunction<Equipped<? extends CollectionDescriptor>, R, ? extends ApiException> handler)
+            throws ApiException {
 
         // attempt to obtain path variables of the current request
         Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE,

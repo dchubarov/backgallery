@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.WebRequest;
+import org.twowls.backgallery.exception.ApiException;
+import org.twowls.backgallery.exception.DataProcessingException;
 import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.UserOperation;
@@ -45,28 +47,36 @@ public class ContentService {
         this.cache = Objects.requireNonNull(cache, "Cache service is required");
     }
 
-    public Equipped<RealmDescriptor> findRealm(String realmName) {
-        return cache.getOrCreate(realmName, RealmDescriptor.class, (name) -> {
-            Path configPath = Paths.get(dataDir, name, RealmDescriptor.CONFIG).toAbsolutePath();
-            try {
-                return objectMapper.readValue(configPath.toFile(), RealmDescriptorJson.class);
-            } catch (IOException e) {
-                logger.error("Error reading realm configuration: " + name, e);
-                throw new UncheckedIOException(e);
-            }
-        });
+    public Equipped<RealmDescriptor> findRealm(String realmName) throws ApiException {
+        try {
+            return cache.getOrCreate(realmName, RealmDescriptor.class, (name) -> {
+                Path configPath = Paths.get(dataDir, name, RealmDescriptor.CONFIG).toAbsolutePath();
+                try {
+                    return objectMapper.readValue(configPath.toFile(), RealmDescriptorJson.class);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            });
+        } catch (Exception e) {
+            throw new DataProcessingException("Error loading realm info: " + realmName,
+                    (e instanceof UncheckedIOException ? e.getCause() : e));
+        }
     }
 
-    public Equipped<CollectionDescriptor> findCollection(Equipped<RealmDescriptor> realm, String collectionName) {
-        return cache.getOrCreate(collectionName, CollectionDescriptor.class, (name) -> {
-            Path configPath = Paths.get(dataDir, realm.name(), name, CollectionDescriptor.CONFIG).toAbsolutePath();
-            try {
-                return objectMapper.readValue(configPath.toFile(), CollectionDescriptorJson.class);
-            } catch (IOException e) {
-                logger.error("Error reading collection configuration: " + realm.name() + "." + name, e);
-                throw new UncheckedIOException(e);
-            }
-        }).with(REALM_PROP, realm);
+    public Equipped<CollectionDescriptor> findCollection(Equipped<RealmDescriptor> realm, String collectionName) throws ApiException {
+        try {
+            return cache.getOrCreate(collectionName, CollectionDescriptor.class, (name) -> {
+                Path configPath = Paths.get(dataDir, realm.name(), name, CollectionDescriptor.CONFIG).toAbsolutePath();
+                try {
+                    return objectMapper.readValue(configPath.toFile(), CollectionDescriptorJson.class);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }).with(REALM_PROP, realm);
+        } catch (Exception e) {
+            throw new DataProcessingException("Error loading collection info: '" + collectionName + "' in realm '" +
+                    realm.name() + "'", (e instanceof UncheckedIOException ? e.getCause(): e));
+        }
     }
 
     public RealmAuthenticator authenticatorForRealm(RealmDescriptor realm) {
