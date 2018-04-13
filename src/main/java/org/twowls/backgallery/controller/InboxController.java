@@ -14,7 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.UserOperation;
-import org.twowls.backgallery.service.CoreService;
+import org.twowls.backgallery.service.ContentService;
 import org.twowls.backgallery.utils.Equipped;
 
 import java.io.File;
@@ -38,8 +38,8 @@ public class InboxController extends AbstractAuthenticatingController {
     private static final String FILE_SIZE_ATTR = "fileSize";
 
     @Autowired
-    InboxController(CoreService coreService) {
-        super(coreService);
+    InboxController(ContentService contentService) {
+        super(contentService);
     }
 
     // TODO no throws Exception, no ISE
@@ -48,7 +48,7 @@ public class InboxController extends AbstractAuthenticatingController {
             @RequestParam("file") MultipartFile file, WebRequest request,
             RedirectAttributes redirectAttributes) throws Exception {
 
-        return ifAuthorizedInCollection(UserOperation.UPLOAD_IMAGE, request, (coll) -> {
+        return ifAuthorized(UserOperation.UPLOAD_IMAGE, request, (coll) -> {
             logger.info("Uploaded {} [{}], {} byte(s)", file.getOriginalFilename(),
                     file.getContentType(), file.getSize());
 
@@ -71,12 +71,12 @@ public class InboxController extends AbstractAuthenticatingController {
     // TODO no throws Exception, no ISE
     @GetMapping(value = "uploaded")
     public void postUpload(@PathVariable String realmName, @PathVariable String collectionName, WebRequest request) throws Exception {
-        ifAuthorizedInCollection(UserOperation.UPLOAD_IMAGE, request, (coll) -> {
+        ifAuthorized(UserOperation.UPLOAD_IMAGE, request, (coll) -> {
             Map attr = (Map) request.getAttribute(DispatcherServlet.INPUT_FLASH_MAP_ATTRIBUTE, WebRequest.SCOPE_REQUEST);
             logger.info(attr.toString());
 
-            Equipped<CollectionDescriptor> targetColl = coreService.findCollection(
-                    coll.equippedProp(CoreService.REALM_PROP, RealmDescriptor.class),
+            Equipped<CollectionDescriptor> targetColl = contentService.findCollection(
+                    coll.equippedProp(ContentService.REALM_PROP, RealmDescriptor.class),
                     (String) attr.get(TARGET_COLLECTION_ATTR));
 
             if (targetColl == null || !StringUtils.equals(coll.name(), targetColl.name())) {

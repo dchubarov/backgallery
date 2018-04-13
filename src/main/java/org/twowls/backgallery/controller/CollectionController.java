@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.UserOperation;
-import org.twowls.backgallery.service.CoreService;
+import org.twowls.backgallery.service.ContentService;
 
 /**
  * <p>TODO add documentation...</p>
@@ -24,14 +24,14 @@ public class CollectionController extends AbstractAuthenticatingController {
     private static final Logger logger = LoggerFactory.getLogger(CollectionController.class);
 
     @Autowired
-    CollectionController(CoreService coreService) {
-        super(coreService);
+    CollectionController(ContentService contentService) {
+        super(contentService);
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CollectionDescriptor>
     collectionInfo(WebRequest request) throws Exception {
-        return ifAuthorizedInCollection(UserOperation.GET_COLLECTION_INFO, request,
+        return ifAuthorized(UserOperation.GET_COLLECTION_INFO, request,
                 (coll) -> ResponseEntity.ok(coll.bare(CollectionDescriptor.class)))
                 .orElseThrow(() -> new IllegalStateException("Not authorized"));
     }

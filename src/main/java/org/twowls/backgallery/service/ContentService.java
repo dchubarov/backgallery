@@ -28,12 +28,12 @@ import java.util.Objects;
  * @author Dmitry Chubarov
  */
 @Service
-public class CoreService {
+public class ContentService {
     private static final String TOKEN_HEADER = "X-AccessToken";
     private static final String TOKEN_PARAM = "token";
     public static final String REALM_PROP = "realm";
 
-    private static final Logger logger = LoggerFactory.getLogger(CoreService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ContentService.class);
     private final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
     private final CacheService cache;
 
@@ -41,7 +41,7 @@ public class CoreService {
     private String dataDir;
 
     @Autowired
-    CoreService(CacheService cache) {
+    ContentService(CacheService cache) {
         this.cache = Objects.requireNonNull(cache, "Cache service is required");
     }
 

@@ -8,7 +8,7 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.UserOperation;
-import org.twowls.backgallery.service.CoreService;
+import org.twowls.backgallery.service.ContentService;
 import org.twowls.backgallery.service.RealmAuthenticator;
 import org.twowls.backgallery.utils.Equipped;
 import org.twowls.backgallery.utils.ThrowingFunction;
@@ -27,22 +27,22 @@ abstract class AbstractAuthenticatingController {
     private static final String COLLECTION_NAME_PATH_VARIABLE = "collectionName";
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractAuthenticatingController.class);
-    final CoreService coreService;
+    final ContentService contentService;
 
-    AbstractAuthenticatingController(CoreService coreService) {
-        this.coreService = Objects.requireNonNull(coreService);
+    AbstractAuthenticatingController(ContentService contentService) {
+        this.contentService = Objects.requireNonNull(contentService);
     }
 
     /**
      * TODO no throws Exception, no ISEs
      *
-     * @param requestedOp
+     * @param requestedOperation
      * @param request
      * @param handler
      * @param <R>
      * @return
      */
-    <R> Optional<R> ifAuthorizedInCollection(UserOperation requestedOp, WebRequest request,
+    <R> Optional<R> ifAuthorized(UserOperation requestedOperation, WebRequest request,
             ThrowingFunction<Equipped<? extends CollectionDescriptor>, R, ? extends Exception> handler)
             throws Exception {
 
@@ -61,10 +61,10 @@ abstract class AbstractAuthenticatingController {
             throw new IllegalStateException("Realm and (or) collection undefined.");
         }
 
-        Equipped<RealmDescriptor> realm = coreService.findRealm(realmName);
-        RealmAuthenticator authenticator = coreService.authenticatorForRealm(realm.bare());
-        if (authenticator.authorized(requestedOp, realm.bare(), request)) {
-            Equipped<CollectionDescriptor> coll = coreService.findCollection(realm, collectionName);
+        Equipped<RealmDescriptor> realm = contentService.findRealm(realmName);
+        RealmAuthenticator authenticator = contentService.authenticatorForRealm(realm.bare());
+        if (authenticator.authorized(requestedOperation, realm.bare(), request)) {
+            Equipped<CollectionDescriptor> coll = contentService.findCollection(realm, collectionName);
             return Optional.ofNullable(handler.apply(coll));
         }
 
