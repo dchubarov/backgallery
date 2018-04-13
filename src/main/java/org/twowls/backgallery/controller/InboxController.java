@@ -33,6 +33,19 @@ import java.util.Objects;
 /**
  * <p>TODO add documentation...</p>
  *
+ * <h4>Inbox URL scheme:</h4>
+ * <dl>
+ *  <dt>GET /{realm}/{collection}/inbox</dt><dd>list items currently in inbox</dd>
+ *  <dt>POST(PUT) /{realm}/{collection}/inbox/pull</dt><dd>pull local file from server file system into inbox</dd>
+ *  <dt>POST(PUT) /{realm}/{collection}/inbox/upload</dt><dd>upload file to inbox</dd>
+ *  <dt>GET /{realm}/{collection}/inbox/uploaded</dt><dd>handle pulled or uploaded file</dd>
+ *  <dt>PUT /{realm}/{collection}/inbox/i/{imageId}</dt><dd>update image info in inbox</dd>
+ *  <dt>GET /{realm}/{collection}/inbox/i/{imageId}</dt><dd>returns image info to client</dd>
+ *  <dt>GET /{realm}/{collection}/inbox/i/{imageId}/original</dt><dd>TODO (?) return original image data</dd>
+ *  <dt>GET /{realm}/{collection}/inbox/i/{imageId}/preview</dt><dd>TODO (?) return original image preview data</dd>
+ *  <dt>DELETE /{realm}/{collection}/inbox/i/{imageId}</dt><dd>delete image from inbox</dd>
+ * </dl>
+ *
  * @author Dmitry Chubarov
  */
 @RestController
@@ -50,7 +63,7 @@ public class InboxController extends AbstractAuthenticatingController {
         super(contentService);
     }
 
-    @PutMapping(value = "pull")
+    @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT}, value = "pull")
     public ModelAndView pullLocalFile(WebRequest request, @RequestParam String localPath,
             RedirectAttributes redirectAttributes) throws ApiException {
 
@@ -72,13 +85,15 @@ public class InboxController extends AbstractAuthenticatingController {
             redirectAttributes.addFlashAttribute(TRANSIT_FILE_ATTR, path.toFile());
             redirectAttributes.addFlashAttribute(ORIGINAL_NAME_ATTR, path.getFileName().toString());
             redirectAttributes.addFlashAttribute(TARGET_COLLECTION_ATTR, coll.name());
+            // TODO image content type
+//            redirectAttributes.addFlashAttribute(CONTENT_TYPE_ATTR, file.getContentType());
             redirectAttributes.addFlashAttribute(FILE_SIZE_ATTR, size);
 
             return new ModelAndView("redirect:uploaded");
         }).orElseThrow(UnauthorizedException::new);
     }
 
-    @PutMapping(value = "upload")
+    @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT}, value = "upload")
     public ModelAndView uploadFile(@RequestParam("file") MultipartFile file,
             WebRequest request, RedirectAttributes redirectAttributes) throws ApiException {
 
