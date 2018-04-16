@@ -21,7 +21,7 @@ import org.twowls.backgallery.service.ContentService;
  * @author Dmitry Chubarov
  */
 @RestController
-@RequestMapping("/{realmName}/{collectionName}")
+@RequestMapping(value = AbstractAuthenticatingController.REQUEST_MAPPING_BASE)
 public class CollectionController extends AbstractAuthenticatingController {
     private static final Logger logger = LoggerFactory.getLogger(CollectionController.class);
 

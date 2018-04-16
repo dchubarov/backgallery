@@ -49,7 +49,7 @@ import java.util.Objects;
  * @author Dmitry Chubarov
  */
 @RestController
-@RequestMapping(value = "/{realmName}/{collectionName}/inbox")
+@RequestMapping(value = AbstractAuthenticatingController.REQUEST_MAPPING_BASE + "/inbox")
 public class InboxController extends AbstractAuthenticatingController {
     private static final Logger logger = LoggerFactory.getLogger(InboxController.class);
     private static final String TRANSIT_FILE_ATTR = "transitFile";

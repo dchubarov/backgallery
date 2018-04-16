@@ -24,8 +24,9 @@ import java.util.Optional;
  * @author Dmitry Chubarov
  */
 abstract class AbstractAuthenticatingController {
-    private static final String REALM_NAME_PATH_VARIABLE = "realmName";
-    private static final String COLLECTION_NAME_PATH_VARIABLE = "collectionName";
+    private static final String REALM_PATH_VARIABLE = "realmName";
+    private static final String COLLECTION_PATH_VARIABLE = "collectionName";
+    static final String REQUEST_MAPPING_BASE = "/{" + REALM_PATH_VARIABLE + "}/{" + COLLECTION_PATH_VARIABLE + "}";
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractAuthenticatingController.class);
     final ContentService contentService;
@@ -53,8 +54,8 @@ abstract class AbstractAuthenticatingController {
 
         String realmName = null, collectionName = null;
         if (pathVariables != null) {
-            realmName = (String) pathVariables.get(REALM_NAME_PATH_VARIABLE);
-            collectionName = (String) pathVariables.get(COLLECTION_NAME_PATH_VARIABLE);
+            realmName = (String) pathVariables.get(REALM_PATH_VARIABLE);
+            collectionName = (String) pathVariables.get(COLLECTION_PATH_VARIABLE);
         }
 
         if (StringUtils.isAnyBlank(realmName, collectionName)) {
