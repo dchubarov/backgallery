@@ -10,16 +10,22 @@ import java.util.Map;
  */
 public class CollectionDescriptor implements Descriptor {
     public static final String CONFIG = "collection.yml";
+    private final Map<String, FieldDescriptor> fields = new HashMap<>();
     private final Map<String, Integer> sizes = new HashMap<>();
     private final String description;
 
-    protected CollectionDescriptor(String description, Map<String, Integer> sizes) {
+    protected CollectionDescriptor(String description, Map<String, FieldDescriptor> fields, Map<String, Integer> sizes) {
         this.description = description;
+        this.fields.putAll(fields);
         this.sizes.putAll(sizes);
     }
 
     public String description() {
         return this.description;
+    }
+
+    public Map<String, FieldDescriptor> fields() {
+        return this.fields;
     }
 
     public Map<String, Integer> sizes() {
@@ -30,6 +36,7 @@ public class CollectionDescriptor implements Descriptor {
     public String toString() {
         return getClass().getSimpleName() + "{ " +
                 "description=" + description +
+                ", fields=" + fields +
                 ", sizes=" + sizes +
                 "}";
     }

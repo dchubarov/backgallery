@@ -79,7 +79,7 @@ public class ContentService {
         }
     }
 
-    public RealmAuthenticator authenticatorForRealm(RealmDescriptor realm) {
+    public RealmAuthenticator authenticatorForRealm(@SuppressWarnings("unused") RealmDescriptor realm) {
         return SimpleTokenAuthenticator.INSTANCE;
     }
 
