@@ -21,4 +21,11 @@ public class FieldDescriptor implements Descriptor {
     public boolean indexed() {
         return this.indexed;
     }
+
+    public String toString() {
+        return getClass().getSimpleName() + "{ " +
+                "localized=" + localized +
+                "indexed=" + indexed +
+                "}";
+    }
 }
