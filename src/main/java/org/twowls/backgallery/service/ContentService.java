@@ -58,12 +58,13 @@ public class ContentService {
                 }
             });
         } catch (Exception e) {
-            throw new DataProcessingException("Error loading realm info: " + realmName,
-                    (e instanceof UncheckedIOException ? e.getCause() : e));
+            throw ApiException.logged(logger, "Error loading realm info: " +
+                    realmName, e, DataProcessingException::new);
         }
     }
 
-    public Equipped<CollectionDescriptor> findCollection(Equipped<RealmDescriptor> realm, String collectionName) throws ApiException {
+    public Equipped<CollectionDescriptor> findCollection(Equipped<RealmDescriptor> realm, String collectionName)
+            throws ApiException {
         try {
             return cache.getOrCreate(collectionName, CollectionDescriptor.class, (name) -> {
                 Path configPath = Paths.get(dataDir, realm.name(), name, CollectionDescriptor.CONFIG).toAbsolutePath();
@@ -74,8 +75,8 @@ public class ContentService {
                 }
             }).with(REALM_PROP, realm);
         } catch (Exception e) {
-            throw new DataProcessingException("Error loading collection info: '" + collectionName + "' in realm '" +
-                    realm.name() + "'", (e instanceof UncheckedIOException ? e.getCause(): e));
+            throw ApiException.logged(logger, "Error loading collection info: '" + collectionName +
+                    "' in realm '" + realm.name() + "'", e, DataProcessingException::new);
         }
     }
 
