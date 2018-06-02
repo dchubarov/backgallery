@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * <p>TODO add documentation...</p>
+ * An exception indicating insufficient privileges of request sender.
  *
  * @author Dmitry Chubarov
  */

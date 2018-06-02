@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.HandlerMapping;
 import org.twowls.backgallery.exception.ApiException;
+import org.twowls.backgallery.exception.InvalidRequestException;
 import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.UserOperation;
@@ -36,13 +37,15 @@ abstract class AbstractAuthenticatingController {
     }
 
     /**
-     * TODO no throws Exception, no ISEs
+     * Invokes a {@code handler} function if and only if current session is authorized
+     * to perform requested operation in the specified realm and collection.
      *
-     * @param requestedOperation
-     * @param request
-     * @param handler
-     * @param <R>
-     * @return
+     * @param requestedOperation the requested operation.
+     * @param request the request, not {@code null}.
+     * @param handler the handler function, not {@code null}.
+     * @param <R> type of {@code handler}'s return value.
+     * @return an {@code Optional} that either containing a value returned by the {@code handler},
+     *  or is empty if requested operation is not permitted.
      */
     <R> Optional<R> ifAuthorizedInCollection(UserOperation requestedOperation, WebRequest request,
             ThrowingFunction<Equipped<? extends CollectionDescriptor>, R, ? extends ApiException> handler)
@@ -59,8 +62,8 @@ abstract class AbstractAuthenticatingController {
         }
 
         if (StringUtils.isAnyBlank(realmName, collectionName)) {
-            // TODO not ISE
-            throw new IllegalStateException("Realm and (or) collection undefined.");
+            throw ApiException.logged(logger, "Realm and (or) collection undefined",
+                    null, InvalidRequestException::new);
         }
 
         Equipped<RealmDescriptor> realm = contentService.findRealm(realmName);
