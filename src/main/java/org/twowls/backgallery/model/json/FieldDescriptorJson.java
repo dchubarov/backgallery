@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.twowls.backgallery.model.FieldDescriptor;
+import org.twowls.backgallery.model.FieldOption;
 import org.twowls.backgallery.model.FieldType;
+
+import java.util.stream.Collectors;
 
 /**
  * <p>TODO add documentation...</p>
@@ -13,32 +16,26 @@ import org.twowls.backgallery.model.FieldType;
  */
 public class FieldDescriptorJson extends FieldDescriptor {
     private static final String FIELD_TYPE_JSON = "type";
-    private static final String LOCALIZED_JSON = "localized";
-    private static final String INDEXED_JSON = "indexed";
+    private static final String FIELD_OPTIONS_JSON = "options";
 
     @JsonCreator
     @SuppressWarnings("unused")
     FieldDescriptorJson(
             @JsonProperty(FIELD_TYPE_JSON) String fieldTypeName,
-            @JsonProperty(LOCALIZED_JSON) boolean localized,
-            @JsonProperty(INDEXED_JSON) boolean indexed) {
-        super(FieldType.forName(fieldTypeName), localized, indexed);
+            @JsonProperty(FIELD_OPTIONS_JSON) String fieldOptions) {
+        super(FieldType.decode(fieldTypeName), FieldOption.decodeMultiple(fieldOptions));
     }
 
     @JsonProperty(FIELD_TYPE_JSON)
+    @SuppressWarnings("unused")
     public String typeName() {
         return StringUtils.lowerCase(type().name());
     }
 
-    @Override
-    @JsonProperty(LOCALIZED_JSON)
-    public boolean localized() {
-        return super.localized();
-    }
-
-    @Override
-    @JsonProperty(INDEXED_JSON)
-    public boolean indexed() {
-        return super.indexed();
+    @JsonProperty(FIELD_OPTIONS_JSON)
+    @SuppressWarnings("unused")
+    public String optionNames() {
+        return options().stream().map(o -> StringUtils.lowerCase(o.name()))
+                .collect(Collectors.joining(", "));
     }
 }

@@ -1,5 +1,7 @@
 package org.twowls.backgallery.model;
 
+import java.util.EnumSet;
+
 /**
  * <p>TODO add documentation...</p>
  *
@@ -7,32 +9,25 @@ package org.twowls.backgallery.model;
  */
 public class FieldDescriptor implements Descriptor {
     private final FieldType type;
-    private final boolean localized;
-    private final boolean indexed;
+    private final EnumSet<FieldOption> options;
 
-    protected FieldDescriptor(FieldType type, boolean localized, boolean indexed) {
-        this.type = type == null ? FieldType.DEFAULT : type;
-        this.localized = localized;
-        this.indexed = indexed;
+    protected FieldDescriptor(FieldType type, EnumSet<FieldOption> options) {
+        this.type = (type == null ? FieldType.DEFAULT : type);
+        this.options = (options == null ? EnumSet.noneOf(FieldOption.class) : EnumSet.copyOf(options));
     }
 
     public FieldType type() {
         return this.type;
     }
 
-    public boolean localized() {
-        return this.localized;
-    }
-
-    public boolean indexed() {
-        return this.indexed;
+    public EnumSet<FieldOption> options() {
+        return EnumSet.copyOf(this.options);
     }
 
     public String toString() {
         return getClass().getSimpleName() + "{ " +
                 "type=" + type + ", " +
-                "localized=" + localized + ", " +
-                "indexed=" + indexed +
-                "}";
+                "options=" + options +
+                " }";
     }
 }

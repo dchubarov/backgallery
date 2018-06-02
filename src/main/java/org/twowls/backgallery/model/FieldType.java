@@ -18,14 +18,14 @@ public enum FieldType {
     FLAG("boolean", "bool"),
     LOCATION("geo", "coordinates");
 
-    private Set<String> typeNames = new HashSet<>();
+    private Set<String> altNames = new HashSet<>();
 
-    FieldType(String... names) {
-        typeNames.addAll(Arrays.asList(names));
+    FieldType(String... altNames) {
+        this.altNames.addAll(Arrays.asList(altNames));
     }
 
-    public static FieldType forName(String name) {
-        return (name != null ? Stream.of(values()).filter(o -> Stream.concat(Stream.of(o.name()), o.typeNames.stream())
+    public static FieldType decode(String name) {
+        return (name != null ? Stream.of(values()).filter(o -> Stream.concat(Stream.of(o.name()), o.altNames.stream())
                 .anyMatch(s -> StringUtils.equalsIgnoreCase(s, name))).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("There is no [" + FieldType.class.getName() +
                         "] constant for value '" + name + "'.")) : null);
