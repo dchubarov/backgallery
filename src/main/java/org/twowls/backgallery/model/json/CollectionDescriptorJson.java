@@ -21,7 +21,8 @@ public class CollectionDescriptorJson extends CollectionDescriptor {
     @JsonCreator
     @SuppressWarnings("unused")
     CollectionDescriptorJson(@JsonProperty(DESCRIPTION_JSON) String description,
-            @JsonProperty(FIELDS_JSON) @JsonDeserialize(contentAs = FieldDescriptorJson.class) Map<String, FieldDescriptor> fields,
+            @JsonProperty(FIELDS_JSON)
+            @JsonDeserialize(contentAs = FieldDescriptorJson.class) Map<String, FieldDescriptor> fields,
             @JsonProperty(SIZES_JSON) Map<String, Integer> sizes) {
         super(description, fields, sizes);
     }

@@ -6,12 +6,18 @@ package org.twowls.backgallery.model;
  * @author Dmitry Chubarov
  */
 public class FieldDescriptor implements Descriptor {
+    private final FieldType type;
     private final boolean localized;
     private final boolean indexed;
 
-    protected FieldDescriptor(boolean localized, boolean indexed) {
+    protected FieldDescriptor(FieldType type, boolean localized, boolean indexed) {
+        this.type = type == null ? FieldType.DEFAULT : type;
         this.localized = localized;
         this.indexed = indexed;
+    }
+
+    public FieldType type() {
+        return this.type;
     }
 
     public boolean localized() {
@@ -24,7 +30,8 @@ public class FieldDescriptor implements Descriptor {
 
     public String toString() {
         return getClass().getSimpleName() + "{ " +
-                "localized=" + localized +
+                "type=" + type + ", " +
+                "localized=" + localized + ", " +
                 "indexed=" + indexed +
                 "}";
     }
