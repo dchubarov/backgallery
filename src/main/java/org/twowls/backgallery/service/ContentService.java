@@ -73,7 +73,7 @@ public class ContentService {
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
-            }).with(REALM_PROP, realm); // TODO do not attach realm itself, use its name
+            }).with(REALM_PROP, realm.name());
         } catch (Exception e) {
             throw ApiException.logged(logger, "Error loading collection info: '" + collectionName +
                     "' in realm '" + realm.name() + "'", e, DataProcessingException::new);

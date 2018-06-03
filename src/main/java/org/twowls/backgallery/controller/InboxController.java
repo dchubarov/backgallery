@@ -128,9 +128,11 @@ public class InboxController extends AbstractAuthenticatingController {
             Map attr = (Map) request.getAttribute(DispatcherServlet.INPUT_FLASH_MAP_ATTRIBUTE, WebRequest.SCOPE_REQUEST);
             logger.info(attr.toString());
 
+            Equipped<RealmDescriptor> targetRealm = contentService.findRealm(
+                    (String) coll.prop(ContentService.REALM_PROP));
+
             Equipped<CollectionDescriptor> targetColl = contentService.findCollection(
-                    coll.equippedProp(ContentService.REALM_PROP, RealmDescriptor.class),
-                    (String) attr.get(TARGET_COLLECTION_ATTR));
+                    targetRealm, (String) attr.get(TARGET_COLLECTION_ATTR));
 
             if (targetColl == null || !StringUtils.equals(coll.name(), targetColl.name())) {
                 throw new InvalidRequestException("Current collection does not match upload target: " +
