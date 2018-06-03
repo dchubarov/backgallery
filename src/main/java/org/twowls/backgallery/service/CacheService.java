@@ -25,13 +25,13 @@ public class CacheService {
     private static final Logger logger = LoggerFactory.getLogger(CacheService.class);
     private final ConcurrentMap<String, Equipped<?>> data = new ConcurrentHashMap<>();
 
-    public <T> Equipped<T>
+    <T> Equipped<T>
     getOrCreate(String key, Class<? extends T> bareClass, Function<String, ? extends T> factory) {
         return getOrCreate(key, key, bareClass, factory);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> Equipped<T>
+    <T> Equipped<T>
     getOrCreate(String key, String instanceName, Class<? extends T> bareClass, Function<String, ? extends T> factory) {
         String normalizedKey = normalizedName(key);
         requireNonNull(factory);
@@ -53,7 +53,13 @@ public class CacheService {
         return (Equipped<T>) entry;
     }
 
-    public Equipped<?> evict(String key) {
-        return data.remove(normalizedName(key));
+    Equipped<?> evict(String key) {
+        Equipped<?> entry = data.remove(normalizedName(key));
+        if (entry != null) {
+            logger.debug("Evicted cache entry with key: {}", key);
+        } else {
+            logger.debug("Eviction failed for key: {}, key does not exists.", key);
+        }
+        return entry;
     }
 }

@@ -157,9 +157,25 @@ public class ContentService {
                 if (key != null && key.isValid()) {
                     Path dir = (Path) key.watchable();
                     key.pollEvents().forEach(e -> {
-                        if (e.context() instanceof Path) {
-                            Path modifiedEntry = (Path) e.context();
-                            logger.info("Watch service event: {} {}/{}", e.kind(), dir, modifiedEntry);
+                        Path modifiedEntry = (Path) e.context();
+                        logger.debug("Watch service event: {} {}/{}", e.kind(), dir, modifiedEntry);
+
+                        String cacheKeyToEvict = null;
+                        if (modifiedEntry.endsWith(RealmDescriptor.CONFIG)) {
+                            if (dir.getNameCount() > 0) {
+                                cacheKeyToEvict = compositeName(RealmDescriptor.class.getName(),
+                                        dir.getName(dir.getNameCount() - 1).toString());
+                            }
+                        } else if (modifiedEntry.endsWith(CollectionDescriptor.CONFIG)) {
+                            if (dir.getNameCount() > 1) {
+                                cacheKeyToEvict = compositeName(CollectionDescriptor.class.getName(),
+                                        dir.getName(dir.getNameCount() - 2).toString(),
+                                        dir.getName(dir.getNameCount() - 1).toString());
+                            }
+                        }
+
+                        if (cacheKeyToEvict != null) {
+                            cache.evict(cacheKeyToEvict);
                         }
                     });
 
