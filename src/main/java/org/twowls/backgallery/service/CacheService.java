@@ -1,16 +1,18 @@
 package org.twowls.backgallery.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.twowls.backgallery.utils.Equipped;
-import org.twowls.backgallery.utils.Named;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
+import static org.twowls.backgallery.utils.Named.compositeName;
+import static org.twowls.backgallery.utils.Named.normalizedName;
 
 /**
  * Represents simple in-memory cache for data entities.
@@ -23,16 +25,23 @@ public class CacheService {
     private static final Logger logger = LoggerFactory.getLogger(CacheService.class);
     private final ConcurrentMap<String, Equipped<?>> data = new ConcurrentHashMap<>();
 
+    public <T> Equipped<T>
+    getOrCreate(String key, Class<? extends T> bareClass, Function<String, ? extends T> factory) {
+        return getOrCreate(key, key, bareClass, factory);
+    }
+
     @SuppressWarnings("unchecked")
-    public <T> Equipped<T> getOrCreate(String key, Class<? extends T> bareClass, Function<String, ? extends T> factory) {
-        String normalizedKey = Named.normalize(key);
+    public <T> Equipped<T>
+    getOrCreate(String key, String instanceName, Class<? extends T> bareClass, Function<String, ? extends T> factory) {
+        String normalizedKey = normalizedName(key);
         requireNonNull(factory);
 
         // create a new cache entry for given key and class, invoking factory function is key is missing
-        Equipped<?> entry = data.computeIfAbsent(bareClass.getName() + "$" + normalizedKey, (compoundKey) -> {
+        Equipped<?> entry = data.computeIfAbsent(compositeName(bareClass.getName(), normalizedKey), (fullKey) -> {
             T instance = factory.apply(normalizedKey);
-            logger.debug("Created new cache entry with key \"{}\" --> \"{}\".", compoundKey, instance);
-            return Equipped.of(instance, normalizedKey).with(CREATE_TIME, System.nanoTime());
+            logger.debug("Created new cache entry with key \"{}\" --> \"{}\".", fullKey, instance);
+            return Equipped.of(instance, StringUtils.defaultString(normalizedName(instanceName), normalizedKey))
+                    .with(CREATE_TIME, System.nanoTime());
         });
 
         // check whether cached object is compatible with requested class
@@ -45,6 +54,6 @@ public class CacheService {
     }
 
     public Equipped<?> evict(String key) {
-        return data.remove(Named.normalize(key));
+        return data.remove(normalizedName(key));
     }
 }

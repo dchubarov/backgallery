@@ -2,6 +2,9 @@ package org.twowls.backgallery.utils;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -40,7 +43,17 @@ public interface Named<T> {
      * @param name the source name.
      * @return the normalized name.
      */
-    static String normalize(String name) {
+    static String normalizedName(String name) {
         return requireNonNull(StringUtils.trimToEmpty(name));
+    }
+
+    /**
+     * Returns a name composed of multiple parts.
+     *
+     * @param names one or more names to composed, each will be normalized prior to add.
+     * @return the composite name.
+     */
+    static String compositeName(String... names) {
+        return Arrays.stream(names).map(Named::normalizedName).collect(Collectors.joining("$"));
     }
 }

@@ -4,6 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static java.util.Objects.requireNonNull;
+import static org.twowls.backgallery.utils.Named.normalizedName;
 
 /**
  * Represents an entity equipped with additional properties.
@@ -17,7 +18,7 @@ public class Equipped<T> implements Named<T> {
     private final T obj;
 
     private Equipped(T obj, String name) {
-        properties.put(NAME, Named.normalize(name));
+        properties.put(NAME, normalizedName(name));
         this.obj = obj;
     }
 
@@ -32,12 +33,12 @@ public class Equipped<T> implements Named<T> {
     }
 
     public Equipped<T> with(String key, Object value) {
-        properties.putIfAbsent(Named.normalize(key), value);
+        properties.putIfAbsent(normalizedName(key), value);
         return this;
     }
 
     public Object prop(String key) {
-        return properties.get(Named.normalize(key));
+        return properties.get(normalizedName(key));
     }
 
     public <U> U prop(String key, Class<U> target) {

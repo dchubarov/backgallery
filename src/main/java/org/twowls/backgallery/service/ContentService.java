@@ -24,6 +24,8 @@ import java.io.UncheckedIOException;
 import java.nio.file.*;
 import java.util.Objects;
 
+import static org.twowls.backgallery.utils.Named.compositeName;
+
 /**
  * Represents a service providing access to data.
  *
@@ -50,12 +52,20 @@ public class ContentService {
 
     public Equipped<RealmDescriptor> findRealm(String realmName) throws ApiException {
         try {
-            return cache.getOrCreate(realmName, RealmDescriptor.class, (name) -> {
-                Path configPath = Paths.get(dataDir, name, RealmDescriptor.CONFIG).toAbsolutePath();
+            return cache.getOrCreate(realmName, RealmDescriptor.class, (cacheKey) -> {
+                Path configPath = Paths.get(dataDir, realmName, RealmDescriptor.CONFIG).toAbsolutePath();
                 try {
-                    RealmDescriptorJson descriptor = objectMapper.readValue(configPath.toFile(), RealmDescriptorJson.class);
-                    Paths.get(dataDir, name).register(watcher, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE);
-                    return descriptor;
+                    // load realm descriptor file into a model bean
+                    RealmDescriptorJson bean = objectMapper.readValue(configPath.toFile(),
+                            RealmDescriptorJson.class);
+
+                    // register realm directory with file system watcher
+                    Paths.get(dataDir, realmName).register(
+                            watcher,
+                            StandardWatchEventKinds.ENTRY_MODIFY,
+                            StandardWatchEventKinds.ENTRY_DELETE);
+
+                    return bean;
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
@@ -69,12 +79,20 @@ public class ContentService {
     public Equipped<CollectionDescriptor> findCollection(Equipped<RealmDescriptor> realm, String collectionName)
             throws ApiException {
         try {
-            return cache.getOrCreate(collectionName, CollectionDescriptor.class, (name) -> {
-                Path configPath = Paths.get(dataDir, realm.name(), name, CollectionDescriptor.CONFIG).toAbsolutePath();
+            return cache.getOrCreate(compositeName(realm.name(), collectionName), collectionName, CollectionDescriptor.class, (cacheKey) -> {
+                Path configPath = Paths.get(dataDir, realm.name(), collectionName, CollectionDescriptor.CONFIG).toAbsolutePath();
                 try {
-                    CollectionDescriptorJson descriptor = objectMapper.readValue(configPath.toFile(), CollectionDescriptorJson.class);
-                    Paths.get(dataDir, realm.name(), name).register(watcher, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE);
-                    return descriptor;
+                    // load collection descriptor file to a model bean
+                    CollectionDescriptorJson bean = objectMapper.readValue(configPath.toFile(),
+                            CollectionDescriptorJson.class);
+
+                    // register collection directory with file system watcher
+                    Paths.get(dataDir, realm.name(), collectionName).register(
+                            watcher,
+                            StandardWatchEventKinds.ENTRY_MODIFY,
+                            StandardWatchEventKinds.ENTRY_DELETE);
+
+                    return bean;
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
