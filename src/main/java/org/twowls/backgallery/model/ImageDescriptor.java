@@ -1,7 +1,7 @@
 package org.twowls.backgallery.model;
 
 /**
- * <p>TODO add documentation...</p>
+ * Represents an individual image in a collection.
  *
  * @author Dmitry Chubarov
  */

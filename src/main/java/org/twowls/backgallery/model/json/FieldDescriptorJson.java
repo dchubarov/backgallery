@@ -10,7 +10,7 @@ import org.twowls.backgallery.model.FieldType;
 import java.util.stream.Collectors;
 
 /**
- * <p>TODO add documentation...</p>
+ * A {@link FieldDescriptor} specialization equipped with JSON serialization/deserialization rules.
  *
  * @author Dmitry Chubarov
  */

@@ -16,7 +16,7 @@ import org.twowls.backgallery.model.UserOperation;
 import org.twowls.backgallery.service.ContentService;
 
 /**
- * <p>TODO add documentation...</p>
+ * Collection-centric REST API methods.
  *
  * @author Dmitry Chubarov
  */

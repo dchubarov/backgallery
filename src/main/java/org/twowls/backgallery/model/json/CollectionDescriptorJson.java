@@ -9,7 +9,7 @@ import org.twowls.backgallery.model.FieldDescriptor;
 import java.util.Map;
 
 /**
- * <p>TODO add documentation...</p>
+ * A {@link CollectionDescriptor} specialization equipped with JSON serialization/deserialization rules.
  *
  * @author Dmitry Chubarov
  */

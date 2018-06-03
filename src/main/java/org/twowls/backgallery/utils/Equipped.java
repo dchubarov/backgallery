@@ -1,8 +1,9 @@
 package org.twowls.backgallery.utils;
 
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Represents an entity equipped with additional properties.
@@ -40,12 +41,12 @@ public class Equipped<T> implements Named<T> {
     }
 
     public <U> U prop(String key, Class<U> target) {
-        return Objects.requireNonNull(target).cast(prop(key));
+        return requireNonNull(target).cast(prop(key));
     }
 
     @SuppressWarnings("unchecked")
     public <V> Equipped<V> equippedProp(String key, Class<V> target) {
-        Objects.requireNonNull(target);
+        requireNonNull(target);
         Equipped<?> e = (Equipped<?>) prop(key);
         Class<?> bareClass = (e != null && e.bare() != null ? e.bare().getClass() : null);
         if (bareClass == null || !target.isAssignableFrom(bareClass)) {

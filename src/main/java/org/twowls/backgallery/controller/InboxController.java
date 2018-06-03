@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * <p>TODO add documentation...</p>
+ * The controller serving inbox, i.e the area of unpublished photos.
  *
  * <h4>Inbox URL scheme:</h4>
  * <dl>

@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
 /**
- * <p>TODO add documentation...</p>
+ * Represents simple in-memory cache for data entities.
  *
  * @author Dmitry Chubarov
  */

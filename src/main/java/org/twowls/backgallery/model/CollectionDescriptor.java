@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>TODO add documentation...</p>
+ * Represents a collection.
  *
  * @author Dmitry Chubarov
  */

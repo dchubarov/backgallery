@@ -25,7 +25,7 @@ import java.nio.file.Paths;
 import java.util.Objects;
 
 /**
- * <p>TODO add documentation...</p>
+ * Represents a service providing access to data.
  *
  * @author Dmitry Chubarov
  */

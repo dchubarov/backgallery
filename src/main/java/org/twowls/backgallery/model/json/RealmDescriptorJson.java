@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.twowls.backgallery.model.RealmDescriptor;
 
 /**
- * <p>TODO add documentation...</p>
+ * A {@link RealmDescriptor} specialization equipped with JSON serialization/deserialization rules.
  *
  * @author Dmitry Chubarov
  */

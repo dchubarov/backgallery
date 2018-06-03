@@ -3,7 +3,7 @@ package org.twowls.backgallery.model;
 import java.util.EnumSet;
 
 /**
- * <p>TODO add documentation...</p>
+ * Represents a single field definition.
  *
  * @author Dmitry Chubarov
  */

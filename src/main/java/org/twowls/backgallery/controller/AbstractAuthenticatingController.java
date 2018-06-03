@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * <p>TODO add documentation...</p>
+ * Represents a controller whose methods require authentication.
  *
  * @author Dmitry Chubarov
  */

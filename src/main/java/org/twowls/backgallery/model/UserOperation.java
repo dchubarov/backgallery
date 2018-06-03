@@ -1,7 +1,7 @@
 package org.twowls.backgallery.model;
 
 /**
- * <p>TODO add documentation...</p>
+ * Contains a constant for each user operation.
  *
  * @author Dmitry Chubarov
  */

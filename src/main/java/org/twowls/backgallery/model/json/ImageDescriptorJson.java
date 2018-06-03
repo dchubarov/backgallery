@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.twowls.backgallery.model.ImageDescriptor;
 
 /**
- * <p>TODO add documentation...</p>
+ * An {@link ImageDescriptor} specialization equipped with JSON serialization/deserialization rules.
  *
  * @author Dmitry Chubarov
  */
