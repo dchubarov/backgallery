@@ -10,7 +10,7 @@ package org.twowls.backgallery.utils;
  * @author Dmitry Chubarov
  */
 @FunctionalInterface
-public interface ThrowingFunction<T, R, X extends Exception> {
+public interface ThrowingFunction<T, R, X extends Throwable> {
 
     /**
      * Applies this function to a given {@code operand}.
