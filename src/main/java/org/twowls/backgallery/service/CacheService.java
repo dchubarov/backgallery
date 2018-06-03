@@ -6,10 +6,11 @@ import org.springframework.stereotype.Service;
 import org.twowls.backgallery.utils.Equipped;
 import org.twowls.backgallery.utils.Named;
 
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Represents simple in-memory cache for data entities.
@@ -25,7 +26,7 @@ public class CacheService {
     @SuppressWarnings("unchecked")
     public <T> Equipped<T> getOrCreate(String key, Class<? extends T> bareClass, Function<String, ? extends T> factory) {
         String normalizedKey = Named.normalize(key);
-        Objects.requireNonNull(factory);
+        requireNonNull(factory);
 
         // create a new cache entry for given key and class, invoking factory function is key is missing
         Equipped<?> entry = data.computeIfAbsent(bareClass.getName() + "$" + normalizedKey, (compoundKey) -> {

@@ -2,7 +2,7 @@ package org.twowls.backgallery.utils;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Represents an entity identified by its name.
@@ -31,7 +31,7 @@ public interface Named<T> {
      * @throws ClassCastException if the bare object is not assignable to the type {@code U}.
      */
     default <U> U bare(Class<U> target) {
-        return Objects.requireNonNull(target).cast(bare());
+        return requireNonNull(target).cast(bare());
     }
 
     /**
@@ -41,6 +41,6 @@ public interface Named<T> {
      * @return the normalized name.
      */
     static String normalize(String name) {
-        return Objects.requireNonNull(StringUtils.trimToEmpty(name));
+        return requireNonNull(StringUtils.trimToEmpty(name));
     }
 }
