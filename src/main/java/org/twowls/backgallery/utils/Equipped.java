@@ -57,6 +57,14 @@ public class Equipped<T> implements Named<T> {
         return (Equipped<V>) e;
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + " {" +
+                " bare=" + this.obj +
+                ", properties=" + this.properties +
+                " }";
+    }
+
     public static <T> Equipped<T> of(T obj, String name) {
         return new Equipped<>(obj, name);
     }

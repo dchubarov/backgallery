@@ -160,22 +160,15 @@ public class ContentService {
                         Path modifiedEntry = (Path) e.context();
                         logger.debug("Watch service event: {} {}/{}", e.kind(), dir, modifiedEntry);
 
-                        String cacheKeyToEvict = null;
                         if (modifiedEntry.endsWith(RealmDescriptor.CONFIG)) {
                             if (dir.getNameCount() > 0) {
-                                cacheKeyToEvict = compositeName(RealmDescriptor.class.getName(),
-                                        dir.getName(dir.getNameCount() - 1).toString());
+                                cache.evict(dir.getName(dir.getNameCount() - 1).toString(), RealmDescriptor.class);
                             }
                         } else if (modifiedEntry.endsWith(CollectionDescriptor.CONFIG)) {
                             if (dir.getNameCount() > 1) {
-                                cacheKeyToEvict = compositeName(CollectionDescriptor.class.getName(),
-                                        dir.getName(dir.getNameCount() - 2).toString(),
-                                        dir.getName(dir.getNameCount() - 1).toString());
+                                cache.evict(compositeName(dir.getName(dir.getNameCount() - 2).toString(),
+                                        dir.getName(dir.getNameCount() - 1).toString()), CollectionDescriptor.class);
                             }
-                        }
-
-                        if (cacheKeyToEvict != null) {
-                            cache.evict(cacheKeyToEvict);
                         }
                     });
 
