@@ -17,6 +17,7 @@ import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.UserOperation;
 import org.twowls.backgallery.service.ContentService;
+import org.twowls.backgallery.service.IndexingService;
 import org.twowls.backgallery.utils.Equipped;
 
 import javax.servlet.http.HttpServletResponse;
@@ -27,6 +28,8 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * The controller serving inbox, i.e the area of unpublished photos.
@@ -58,9 +61,12 @@ public class InboxController extends AbstractAuthenticatingController {
     private static final String FILE_SIZE_ATTR = ATTRIBUTE_PREFIX + ".fileSize";
     private static final String IMAGE_ID_HEADER = "X-ImageId";
 
+    private final IndexingService indexingService;
+
     @Autowired
-    InboxController(ContentService contentService) {
+    InboxController(ContentService contentService, IndexingService indexingService) {
         super(contentService);
+        this.indexingService = requireNonNull(indexingService);
     }
 
     @PutMapping(value = "upload")
