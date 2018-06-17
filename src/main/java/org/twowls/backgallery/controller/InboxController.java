@@ -51,11 +51,12 @@ import java.util.Objects;
 @RequestMapping(value = AbstractAuthenticatingController.REQUEST_MAPPING_BASE + "/inbox")
 public class InboxController extends AbstractAuthenticatingController {
     private static final Logger logger = LoggerFactory.getLogger(InboxController.class);
-    private static final String TRANSIT_FILE_ATTR = "transitFile";
-    private static final String ORIGINAL_NAME_ATTR = "originalName";
-    private static final String TARGET_COLLECTION_ATTR = "targetCollection";
-    private static final String CONTENT_TYPE_ATTR = "contentType";
-    private static final String FILE_SIZE_ATTR = "fileSize";
+    private static final String ATTRIBUTE_PREFIX = InboxController.class.getName();
+    private static final String TRANSIT_FILE_ATTR = ATTRIBUTE_PREFIX + ".transitFile";
+    private static final String ORIGINAL_NAME_ATTR = ATTRIBUTE_PREFIX + ".originalName";
+    private static final String TARGET_COLLECTION_ATTR = ATTRIBUTE_PREFIX + ".targetCollection";
+    private static final String CONTENT_TYPE_ATTR = ATTRIBUTE_PREFIX + ".contentType";
+    private static final String FILE_SIZE_ATTR = ATTRIBUTE_PREFIX + ".fileSize";
 
     @Autowired
     InboxController(ContentService contentService) {
@@ -138,7 +139,7 @@ public class InboxController extends AbstractAuthenticatingController {
             // 4. move file to inbox
             // 5. create image descriptor
 
-            Hashids h = new Hashids("4NtzCVXAnELUvezek3cN7jaXRPKV", 5, "abcdefhijkmnpqrstuvwxyz");
+            Hashids h = new Hashids("4NtzCVXAnELUvezek3cN7jaXRPKV", 5, "ab0cd1ef2hi3jk4mn5pq6rs7tu8vw9xyz");
             String newId = h.encode((Objects.hash(realmName, coll.name(), System.currentTimeMillis()) >> 7) & 0xffff);
             logger.info("Create new id: {}", newId);
 
