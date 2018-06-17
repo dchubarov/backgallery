@@ -13,7 +13,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.twowls.backgallery.exception.ApiException;
 import org.twowls.backgallery.exception.DataProcessingException;
 import org.twowls.backgallery.exception.InvalidRequestException;
-import org.twowls.backgallery.exception.UnauthorizedException;
 import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.UserOperation;
@@ -57,6 +56,7 @@ public class InboxController extends AbstractAuthenticatingController {
     private static final String TARGET_COLLECTION_ATTR = ATTRIBUTE_PREFIX + ".targetCollection";
     private static final String CONTENT_TYPE_ATTR = ATTRIBUTE_PREFIX + ".contentType";
     private static final String FILE_SIZE_ATTR = ATTRIBUTE_PREFIX + ".fileSize";
+    private static final String IMAGE_ID_HEADER = "X-ImageId";
 
     @Autowired
     InboxController(ContentService contentService) {
@@ -87,7 +87,7 @@ public class InboxController extends AbstractAuthenticatingController {
             request.setAttribute(FILE_SIZE_ATTR, file.getSize(), RequestAttributes.SCOPE_REQUEST);
 
             return new ModelAndView("forward:uploaded");
-        }).orElseThrow(UnauthorizedException::new);
+        });
     }
 
     @PutMapping(value = "pull")
@@ -115,7 +115,7 @@ public class InboxController extends AbstractAuthenticatingController {
             request.setAttribute(FILE_SIZE_ATTR, size, RequestAttributes.SCOPE_REQUEST);
 
             return new ModelAndView("forward:uploaded");
-        }).orElseThrow(UnauthorizedException::new);
+        });
     }
 
     @PutMapping(value = "uploaded")
@@ -139,19 +139,18 @@ public class InboxController extends AbstractAuthenticatingController {
             // 4. move file to inbox
             // 5. create image descriptor
 
-            Hashids h = new Hashids("4NtzCVXAnELUvezek3cN7jaXRPKV", 5, "ab0cd1ef2hi3jk4mn5pq6rs7tu8vw9xyz");
+            Hashids h = new Hashids("4NtzCVXAnELUvezek3cN7jaXRPKV", 5, "ab0cd1ef2hi3jk4mn5pq6rs7tu8vx9yz");
             String newId = h.encode((Objects.hash(realmName, coll.name(), System.currentTimeMillis()) >> 7) & 0xffff);
             logger.info("Create new id: {}", newId);
 
-            response.addHeader("X-ImageId", newId);
+            response.addHeader(IMAGE_ID_HEADER, newId);
             return new ModelAndView("redirect:i/" + newId);
-        }).orElseThrow(UnauthorizedException::new);
+        });
     }
 
     @GetMapping(value = "i/{imageId}")
     public @ResponseBody String imageInfo(WebRequest request, @PathVariable String imageId) throws ApiException {
         // TODO actually provide image info to client
-        return ifAuthorizedInCollection(UserOperation.GET_IMAGE_INFO, request, (coll) -> imageId)
-                .orElseThrow(UnauthorizedException::new);
+        return ifAuthorizedInCollection(UserOperation.GET_IMAGE_INFO, request, (coll) -> imageId);
     }
 }

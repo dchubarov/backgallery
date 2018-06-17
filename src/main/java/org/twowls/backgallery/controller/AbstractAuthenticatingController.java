@@ -7,6 +7,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.HandlerMapping;
 import org.twowls.backgallery.exception.ApiException;
 import org.twowls.backgallery.exception.InvalidRequestException;
+import org.twowls.backgallery.exception.UnauthorizedException;
 import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.UserOperation;
@@ -17,7 +18,6 @@ import org.twowls.backgallery.utils.ThrowingFunction;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Represents a controller whose methods require authentication.
@@ -47,7 +47,7 @@ abstract class AbstractAuthenticatingController {
      * @return an {@code Optional} that either containing a value returned by the {@code handler},
      *  or is empty if requested operation is not permitted.
      */
-    <R> Optional<R> ifAuthorizedInCollection(UserOperation requestedOperation, WebRequest request,
+    <R> R ifAuthorizedInCollection(UserOperation requestedOperation, WebRequest request,
             ThrowingFunction<Equipped<? extends CollectionDescriptor>, R, ? extends ApiException> handler)
             throws ApiException {
 
@@ -70,9 +70,10 @@ abstract class AbstractAuthenticatingController {
         RealmAuthenticator authenticator = contentService.authenticatorForRealm(realm.bare());
         if (authenticator.authorized(requestedOperation, realm.bare(), request)) {
             Equipped<CollectionDescriptor> coll = contentService.findCollection(realm, collectionName);
-            return Optional.ofNullable(handler.apply(coll));
+            return handler.apply(coll);
         }
 
-        return Optional.empty();
+        throw ApiException.logged(logger, "Not authorized for " + requestedOperation,
+                null, UnauthorizedException::new);
     }
 }
