@@ -11,6 +11,8 @@ public interface CollectionIndexer extends Closeable {
 
     boolean hasId(String id);
 
+    void addId(String id);
+
     @Override
     void close();
 }

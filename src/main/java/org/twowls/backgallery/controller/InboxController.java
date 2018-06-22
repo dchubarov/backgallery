@@ -13,6 +13,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.twowls.backgallery.exception.ApiException;
 import org.twowls.backgallery.exception.DataProcessingException;
 import org.twowls.backgallery.exception.InvalidRequestException;
+import org.twowls.backgallery.exception.ResourceNotFoundException;
 import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.UserOperation;
@@ -145,8 +146,8 @@ public class InboxController extends AbstractAuthenticatingController {
             logger.info("Create new id: {}", newId);
 
             try (CollectionIndexer indexer = contentService.collectionIndexer(coll)) {
-                if (indexer.hasId(newId)) {
-
+                if (!indexer.hasId(newId)) {
+                    indexer.addId(newId);
                 }
             }
 
@@ -158,6 +159,14 @@ public class InboxController extends AbstractAuthenticatingController {
     @GetMapping(value = "i/{imageId}")
     public @ResponseBody String imageInfo(WebRequest request, @PathVariable String imageId) throws ApiException {
         // TODO actually provide image info to client
-        return ifAuthorizedInCollection(UserOperation.GET_IMAGE_INFO, request, (coll) -> imageId);
+        return ifAuthorizedInCollection(UserOperation.GET_IMAGE_INFO, request, (coll) -> {
+            try (CollectionIndexer indexer = contentService.collectionIndexer(coll)) {
+                if (indexer.hasId(imageId)) {
+                    return imageId;
+                }
+            }
+            throw ApiException.logged(logger, "Image not found: " + imageId,
+                    null, ResourceNotFoundException::new);
+        });
     }
 }

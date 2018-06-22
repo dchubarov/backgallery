@@ -4,6 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.LongPoint;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -211,6 +215,19 @@ public class ContentService {
                 logger.warn("Open index failed.", e);
             }
             return false;
+        }
+
+        @Override
+        public void addId(String id) {
+            Document doc = new Document();
+            doc.add(new StringField("id", id, Field.Store.YES));
+            doc.add(new LongPoint("created", System.currentTimeMillis()));
+            try {
+                long seq = defaultIndexWriter().updateDocument(new Term("id", id), doc);
+                logger.debug("Added id {} to index (seq={})", id, seq);
+            } catch (IOException e) {
+                logger.warn("Write to index failed", e);
+            }
         }
 
         @Override
