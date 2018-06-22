@@ -16,8 +16,8 @@ import org.twowls.backgallery.exception.InvalidRequestException;
 import org.twowls.backgallery.model.CollectionDescriptor;
 import org.twowls.backgallery.model.RealmDescriptor;
 import org.twowls.backgallery.model.UserOperation;
+import org.twowls.backgallery.service.CollectionIndexer;
 import org.twowls.backgallery.service.ContentService;
-import org.twowls.backgallery.service.IndexingService;
 import org.twowls.backgallery.utils.Equipped;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,8 +28,6 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * The controller serving inbox, i.e the area of unpublished photos.
@@ -61,12 +59,9 @@ public class InboxController extends AbstractAuthenticatingController {
     private static final String FILE_SIZE_ATTR = ATTRIBUTE_PREFIX + ".fileSize";
     private static final String IMAGE_ID_HEADER = "X-ImageId";
 
-    private final IndexingService indexingService;
-
     @Autowired
-    InboxController(ContentService contentService, IndexingService indexingService) {
+    InboxController(ContentService contentService) {
         super(contentService);
-        this.indexingService = requireNonNull(indexingService);
     }
 
     @PutMapping(value = "upload")
@@ -148,6 +143,12 @@ public class InboxController extends AbstractAuthenticatingController {
             Hashids h = new Hashids("4NtzCVXAnELUvezek3cN7jaXRPKV", 5, "ab0cd1ef2hi3jk4mn5pq6rs7tu8vx9yz");
             String newId = h.encode((Objects.hash(realmName, coll.name(), System.currentTimeMillis()) >> 7) & 0xffff);
             logger.info("Create new id: {}", newId);
+
+            try (CollectionIndexer indexer = contentService.collectionIndexer(coll)) {
+                if (indexer.hasId(newId)) {
+
+                }
+            }
 
             response.addHeader(IMAGE_ID_HEADER, newId);
             return new ModelAndView("redirect:i/" + newId);

@@ -3,6 +3,12 @@ package org.twowls.backgallery.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.index.*;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.store.FSDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,6 +113,10 @@ public class ContentService {
         return SimpleTokenAuthenticator.INSTANCE;
     }
 
+    public CollectionIndexer collectionIndexer(Equipped<? extends CollectionDescriptor> coll) {
+        return new LuceneIndexer(coll);
+    }
+
     @PostConstruct
     void startWatcher() {
         try {
@@ -175,6 +185,56 @@ public class ContentService {
                     key.reset();
                 }
             } while (!interrupted);
+        }
+    }
+
+    private class LuceneIndexer implements CollectionIndexer {
+        private static final String INDEX_DIR = "index";
+        private final CollectionDescriptor coll;
+        private final String collectionName;
+        private final String realmName;
+        private IndexWriter indexWriter;
+
+        LuceneIndexer(Equipped<? extends CollectionDescriptor> collEquipped) {
+            this.coll = collEquipped.bare();
+            this.collectionName = collEquipped.name();
+            this.realmName = (String) collEquipped.prop(REALM_PROP);
+        }
+
+        @Override
+        public boolean hasId(String id) {
+            try (IndexReader indexReader = DirectoryReader.open(defaultIndexWriter())) {
+                IndexSearcher indexSearcher = new IndexSearcher(indexReader);
+                Query query = new TermQuery(new Term("id", id));
+                return (indexSearcher.search(query, 1).totalHits > 0);
+            } catch (IOException e) {
+                logger.warn("Open index failed.", e);
+            }
+            return false;
+        }
+
+        @Override
+        public void close() {
+            if (indexWriter != null) {
+                try {
+                    indexWriter.close();
+                } catch (IOException e) {
+                    logger.warn("Could not close default index writer", e);
+                } finally {
+                    indexWriter = null;
+                }
+            }
+        }
+
+        private IndexWriter defaultIndexWriter() throws IOException {
+            if (indexWriter == null) {
+                FSDirectory indexDir = FSDirectory.open(Paths.get(dataDir, realmName, collectionName, INDEX_DIR));
+                IndexWriterConfig indexConfig = new IndexWriterConfig(new StandardAnalyzer());
+                indexConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+                //indexConfig.setRAMBufferSizeMB(256.0);
+                indexWriter = new IndexWriter(indexDir, indexConfig);
+            }
+            return indexWriter;
         }
     }
 }
